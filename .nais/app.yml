@@ -36,7 +36,7 @@ spec:
         diskAutoresize: true
         tier: {{databaseTier}}
         databases:
-          - name: spill_av_im
+          - name: spillavim
             envVarPrefix: DATABASE
   env:
     - name: KAFKA_RAPID_TOPIC
