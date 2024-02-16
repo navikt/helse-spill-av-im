@@ -13,7 +13,7 @@ import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.inntektsmeldingkontrakt.*
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -57,7 +57,6 @@ class E2ETest {
         verifiserInntektsmeldingFinnes(internId)
     }
 
-
     @Test
     fun `håndterer inntektsmelding`() {
         val internId = UUID.randomUUID()
@@ -65,6 +64,14 @@ class E2ETest {
         testRapid.sendTestMessage(lagInntektsmelding(internId))
         testRapid.sendTestMessage(lagInntektsmeldingHåndtert(internId, vedtaksperiodeId))
         verifiserInntektsmeldingHåndtert(internId, vedtaksperiodeId)
+    }
+
+    @Test
+    fun `ignorerer håndtering uten å ha registrert inntektsmelding`() {
+        val internId = UUID.randomUUID()
+        val vedtaksperiodeId = UUID.randomUUID()
+        testRapid.sendTestMessage(lagInntektsmeldingHåndtert(internId, vedtaksperiodeId))
+        verifiserInntektsmeldingIkkeHåndtert(internId, vedtaksperiodeId)
     }
 
     private fun verifiserInntektsmeldingFinnes(id: UUID) {
@@ -75,12 +82,20 @@ class E2ETest {
         })
     }
 
+    private fun verifiserInntektsmeldingIkkeHåndtert(id: UUID, vedtaksperiodeId: UUID) {
+        assertFalse(erInntektsmeldingHåndtert(id, vedtaksperiodeId))
+    }
+
     private fun verifiserInntektsmeldingHåndtert(id: UUID, vedtaksperiodeId: UUID) {
+        assertTrue(erInntektsmeldingHåndtert(id, vedtaksperiodeId))
+    }
+
+    private fun erInntektsmeldingHåndtert(id: UUID, vedtaksperiodeId: UUID): Boolean {
         @Language("PostgreSQL")
         val stmt = "SELECT EXISTS(SELECT 1 FROM handtering WHERE vedtaksperiode_id = ? AND inntektsmelding_id = (SELECT id FROM inntektsmelding WHERE intern_dokument_id = ?))"
-        assertEquals(true, sessionOf(dataSource.ds).use {
+        return sessionOf(dataSource.ds).use {
             it.run(queryOf(stmt, vedtaksperiodeId, id).map { row -> row.boolean(1) }.asSingle)
-        })
+        } ?: false
     }
 
     private fun lagInntektsmeldingHåndtert(

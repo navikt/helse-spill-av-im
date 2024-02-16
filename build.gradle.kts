@@ -83,6 +83,10 @@ tasks {
         testLogging {
             events("skipped", "failed")
         }
+        systemProperty("junit.jupiter.execution.parallel.enabled", "true")
+        systemProperty("junit.jupiter.execution.parallel.mode.default", "concurrent")
+        systemProperty("junit.jupiter.execution.parallel.config.strategy", "fixed")
+        systemProperty("junit.jupiter.execution.parallel.config.fixed.parallelism", "4")
     }
 
     withType<Wrapper> {

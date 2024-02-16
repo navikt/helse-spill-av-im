@@ -1,5 +1,6 @@
 package no.nav.helse.spill_av_im
 
+import kotliquery.Session
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import org.intellij.lang.annotations.Language
@@ -39,14 +40,19 @@ class InntektsmeldingDao(private val dataSource: () -> DataSource) {
 
     fun lagreHåndtering(fnr: String, internId: UUID, vedtaksperiodeId: UUID, håndtertTidspunkt: ZonedDateTime) {
         sessionOf(dataSource()).use {
+            val inntektsmeldingId = it.finnInntektsmeldingId(internId) ?: return
             it.run(queryOf(HÅNDTERT_IM, mapOf(
                 "fnr" to fnr,
                 "vedtaksperiodeId" to vedtaksperiodeId,
                 "internId" to internId,
+                "inntektsmeldingId" to inntektsmeldingId,
                 "handtert" to håndtertTidspunkt
             )).asExecute)
         }
     }
+
+    private fun Session.finnInntektsmeldingId(internId: UUID) =
+        run(queryOf(FINN_IM_ID, mapOf("internId" to internId)).map { it.long("id") }.asSingle)
 
     private companion object {
         @Language("PostgreSQL")
@@ -56,9 +62,11 @@ class InntektsmeldingDao(private val dataSource: () -> DataSource) {
             ON CONFLICT (intern_dokument_id) DO NOTHING
         """
         @Language("PostgreSQL")
+        private const val FINN_IM_ID = """SELECT id FROM inntektsmelding WHERE intern_dokument_id=:internId"""
+        @Language("PostgreSQL")
         private const val HÅNDTERT_IM = """
             INSERT INTO handtering(fnr, vedtaksperiode_id, inntektsmelding_id, handtert) 
-            VALUES (:fnr, :vedtaksperiodeId, (SELECT id FROM inntektsmelding WHERE intern_dokument_id=:internId), :handtert)
+            VALUES (:fnr, :vedtaksperiodeId, :inntektsmeldingId, :handtert)
         """
     }
 }
