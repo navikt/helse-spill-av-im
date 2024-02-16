@@ -1,0 +1,5 @@
+{
+  "kafkaPool": "nav-dev",
+  "consumerGroupId": "tbd-spill-av-im-v1",
+  "databaseTier": "db-f1-micro"
+}

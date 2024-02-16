@@ -1,0 +1,47 @@
+apiVersion: nais.io/v1alpha1
+kind: Application
+metadata:
+  name: spill-av-im
+  namespace: tbd
+  labels:
+    team: tbd
+spec:
+  image: {{image}}
+  strategy:
+    type: RollingUpdate
+  replicas:
+    min: 2
+    max: 24
+    scalingStrategy:
+      kafka:
+        topic: tbd.rapid.v1
+        consumerGroup: {{consumerGroupId}}
+        threshold: 200
+  liveness:
+    path: /isalive
+  readiness:
+    path: /isready
+  prometheus:
+    path: /metrics
+  preStopHook:
+    http:
+      path: /stop
+  secureLogs:
+    enabled: true
+  kafka:
+    pool: {{kafkaPool}}
+  gcp:
+    sqlInstances:
+      - type: POSTGRES_15
+        diskAutoresize: true
+        tier: {{databaseTier}}
+        databases:
+          - name: spill_av_im
+            envVarPrefix: DATABASE
+  env:
+    - name: KAFKA_RAPID_TOPIC
+      value: tbd.rapid.v1
+    - name: KAFKA_CONSUMER_GROUP_ID
+      value: {{consumerGroupId}}
+    - name: KAFKA_RESET_POLICY
+      value: EARLIEST
