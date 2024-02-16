@@ -7,7 +7,7 @@ create table inntektsmelding
     intern_dokument_id  uuid unique              not null, -- id lagt på av r&r
     innsendt            timestamp with time zone not null, -- når inntektsmeldingen ble sendt inn
     registrert          timestamp with time zone not null, -- når inntektsmeldingen ble registert av spill-av-im
-    avsendersystem      varchar(32),
+    avsendersystem      varchar(256),
     forste_fravarsdag   date        default null,
     inntektsdato        date        default null,
     data                json                     not null
