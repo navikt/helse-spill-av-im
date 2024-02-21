@@ -2,7 +2,7 @@ val gradleversjon = "8.5"
 val rapidsAndRiversVersion = "2024020507581707116327.1c34df474331"
 val flywayCoreVersion = "10.6.0"
 val hikariCPVersion = "5.1.0"
-val postgresqlVersion = "42.7.1"
+val postgresqlVersion = "42.7.2"
 val kotliqueryVersion = "1.9.0"
 
 val innteksmeldingKontraktVersion = "2023.12.13-04-13-2ca03"
