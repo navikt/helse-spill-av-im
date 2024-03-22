@@ -29,10 +29,6 @@ spec:
       path: /stop
   secureLogs:
     enabled: true
-  observability:
-    autoInstrumentation:
-      enabled: true
-      runtime: java
   kafka:
     pool: {{kafkaPool}}
   gcp:
