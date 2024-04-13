@@ -14,6 +14,7 @@ class TrengerArbeidsgiveropplysningerTest {
         private val JANUAR_1 = LocalDate.of(2018, 1, 1)
         private val JANUAR_16 = LocalDate.of(2018, 1, 16)
         private val JANUAR_17 = LocalDate.of(2018, 1, 17)
+        private val JANUAR_18 = LocalDate.of(2018, 1, 18)
         private val JANUAR_31 = LocalDate.of(2018, 1, 31)
         private val FEBRUAR_1 = LocalDate.of(2018, 2, 1)
         private val FEBRUAR_5 = LocalDate.of(2018, 2, 5)
@@ -101,7 +102,42 @@ class TrengerArbeidsgiveropplysningerTest {
 
     @Test
     fun `trenger ikke arbeidsgiverperiode - relevant hvis første fraværsdag overlapper`() {
+        val forespørsel = forespørsel(
+            skjæringstidspunkt = JANUAR_18,
+            førsteFraværsdag = JANUAR_18,
+            sykmeldingsperioder = listOf(
+                TrengerArbeidsgiveropplysninger.Periode(JANUAR_18, JANUAR_31)
+            ),
+            egenmeldinger = emptyList(),
+            harForespurtArbeidsgiverperiode = false
+        )
+        val im = im(
+            arbeidsgiverperiode = listOf(Periode(JANUAR_1, JANUAR_16)),
+            førsteFraværsdag = JANUAR_18,
+            begrunnelseForReduksjonEllerIkkeUtbetalt = null
+        )
 
+        assertTrue(forespørsel.erInntektsmeldingRelevant(im))
+    }
+
+    @Test
+    fun `trenger ikke arbeidsgiverperiode - ikke relevant hvis første fraværsdag er før`() {
+        val forespørsel = forespørsel(
+            skjæringstidspunkt = JANUAR_18,
+            førsteFraværsdag = JANUAR_18,
+            sykmeldingsperioder = listOf(
+                TrengerArbeidsgiveropplysninger.Periode(JANUAR_18, JANUAR_31)
+            ),
+            egenmeldinger = emptyList(),
+            harForespurtArbeidsgiverperiode = false
+        )
+        val im = im(
+            arbeidsgiverperiode = listOf(Periode(JANUAR_1, JANUAR_16)),
+            førsteFraværsdag = JANUAR_1,
+            begrunnelseForReduksjonEllerIkkeUtbetalt = null
+        )
+
+        assertFalse(forespørsel.erInntektsmeldingRelevant(im))
     }
 
     private fun forespørsel(

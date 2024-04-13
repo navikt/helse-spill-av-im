@@ -128,7 +128,18 @@ internal class TrengerArbeidsgiveropplysninger(
         }
 
         fun erInntektsmeldingRelevant(inntektsmelding: Inntektsmelding): Boolean {
-            return erRelevantForArbeidsgiverperiode(inntektsmelding)
+            return erRelevantForArbeidsgiverperiode(inntektsmelding) || erRelevantForInntektEllerRefusjon(inntektsmelding)
+        }
+
+        private fun erRelevantForInntektEllerRefusjon(im: Inntektsmelding): Boolean {
+            if (harForespurtArbeidsgiverperiode) return false
+            val sisteDag = im.arbeidsgiverperioder.maxOfOrNull { it.tom }
+            val foersteFravaersdag = im.foersteFravaersdag
+            val dato = foersteFravaersdag ?: sisteDag ?: return false
+
+            return dato == førsteFraværsdag?.dato
+                    || sykmeldingsperioder.any { it.overlapper(dato) }
+                    || egenmeldinger.any { it.overlapper(dato) }
         }
 
         // hvis vedtaksperioden har bedt om arbeidsgiverperiode så må
@@ -174,7 +185,7 @@ internal class TrengerArbeidsgiveropplysninger(
                 else -> overlapper(Periode(periode.fom, periode.tom.plusDays(1)))
             }
 
-        private fun overlapper(dato: LocalDate) = dato in fom..tom
+        fun overlapper(dato: LocalDate) = dato in fom..tom
         private fun overlapper(other: Periode): Boolean {
             return maxOf(this.fom, other.fom) <= minOf(this.tom, other.tom)
         }
