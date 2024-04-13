@@ -5,7 +5,7 @@ val hikariCPVersion = "5.1.0"
 val postgresqlVersion = "42.7.2"
 val kotliqueryVersion = "1.9.0"
 
-val innteksmeldingKontraktVersion = "2023.12.13-04-13-2ca03"
+val innteksmeldingKontraktVersion = "2024.03.11-02-07-32abf"
 val tbdLibsVersion = "2024.02.09-10.44-24d5802f"
 val junitJupiterVersion = "5.10.2"
 
@@ -41,7 +41,8 @@ dependencies {
     implementation("org.postgresql:postgresql:$postgresqlVersion")
     implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
 
-    testImplementation("no.nav.sykepenger.kontrakter:inntektsmelding-kontrakt:$innteksmeldingKontraktVersion")
+    implementation("no.nav.sykepenger.kontrakter:inntektsmelding-kontrakt:$innteksmeldingKontraktVersion")
+
     testImplementation("com.github.navikt.tbd-libs:postgres-testdatabaser:$tbdLibsVersion")
 
     testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")

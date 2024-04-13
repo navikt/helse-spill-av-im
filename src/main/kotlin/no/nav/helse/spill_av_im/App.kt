@@ -29,6 +29,7 @@ fun main() {
         .apply {
             InntektsmeldingRegistrertRiver(this, dao)
             InntektsmeldingHåndtertRiver(this, dao)
+            TrengerArbeidsgiveropplysninger(this, dao)
             register(object : RapidsConnection.StatusListener {
                 override fun onStartup(rapidsConnection: RapidsConnection) {
                     HikariDataSource(hikariConfig).use { ds ->

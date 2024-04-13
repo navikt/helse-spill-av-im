@@ -1,8 +1,13 @@
 package no.nav.helse.spill_av_im
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import kotliquery.Session
 import kotliquery.queryOf
 import kotliquery.sessionOf
+import no.nav.inntektsmeldingkontrakt.Inntektsmelding
 import org.intellij.lang.annotations.Language
 import java.time.LocalDate
 import java.time.ZonedDateTime
@@ -51,6 +56,17 @@ class InntektsmeldingDao(private val dataSource: () -> DataSource) {
         }
     }
 
+    fun finnUhåndterteInntektsmeldinger(fnr: String, orgnr: String): List<InntektsmeldingDto> {
+        return sessionOf(dataSource()).use {
+            it.run(queryOf(UHÅNDTERT_IM, fnr, orgnr).map { rad ->
+                InntektsmeldingDto(
+                    førsteFraværsdag = rad.localDateOrNull("forste_fravarsdag"),
+                    data = rad.string("data")
+                )
+            }.asList)
+        }
+    }
+
     private fun Session.finnInntektsmeldingId(internId: UUID) =
         run(queryOf(FINN_IM_ID, mapOf("internId" to internId)).map { it.long("id") }.asSingle)
 
@@ -68,5 +84,28 @@ class InntektsmeldingDao(private val dataSource: () -> DataSource) {
             INSERT INTO handtering(fnr, vedtaksperiode_id, inntektsmelding_id, handtert) 
             VALUES (:fnr, :vedtaksperiodeId, :inntektsmeldingId, :handtert)
         """
+        @Language("PostgreSQL")
+        private const val UHÅNDTERT_IM = """
+            SELECT i.forste_fravarsdag, i.data
+            FROM inntektsmelding i
+            LEFT JOIN handtering h ON h.inntektsmelding_id=i.id 
+            WHERE i.fnr = ? AND i.virksomhetsnummer = ? AND i.avsendersystem != 'NAV_NO' AND h.inntektsmelding_id IS NULL
+        """
+    }
+}
+data class InntektsmeldingDto(
+    val førsteFraværsdag: LocalDate?,
+    val data: String
+) {
+    private companion object {
+        private val objectMapper = jacksonObjectMapper()
+            .registerModule(JavaTimeModule())
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+    }
+
+    val inntektsmelding by lazy {
+        runCatching {
+            objectMapper.readValue<Inntektsmelding>(data)
+        }
     }
 }
