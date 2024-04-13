@@ -101,6 +101,46 @@ class TrengerArbeidsgiveropplysningerTest {
     }
 
     @Test
+    fun `trenger arbeidsgiverperiode - relevant hvis første fraværsdag overlapper og reduksjon oppgitt`() {
+        val forespørsel = forespørsel(
+            skjæringstidspunkt = JANUAR_17,
+            førsteFraværsdag = JANUAR_17,
+            sykmeldingsperioder = listOf(
+                TrengerArbeidsgiveropplysninger.Periode(JANUAR_17, JANUAR_31)
+            ),
+            egenmeldinger = emptyList(),
+            harForespurtArbeidsgiverperiode = true
+        )
+        val im = im(
+            arbeidsgiverperiode = emptyList(),
+            førsteFraværsdag = JANUAR_17,
+            begrunnelseForReduksjonEllerIkkeUtbetalt = "Ferie"
+        )
+
+        assertTrue(forespørsel.erInntektsmeldingRelevant(im))
+    }
+
+    @Test
+    fun `trenger arbeidsgiverperiode - ikke relevant hvis første fraværsdag ikke overlapper og reduksjon oppgitt`() {
+        val forespørsel = forespørsel(
+            skjæringstidspunkt = JANUAR_17,
+            førsteFraværsdag = JANUAR_17,
+            sykmeldingsperioder = listOf(
+                TrengerArbeidsgiveropplysninger.Periode(JANUAR_17, JANUAR_31)
+            ),
+            egenmeldinger = emptyList(),
+            harForespurtArbeidsgiverperiode = true
+        )
+        val im = im(
+            arbeidsgiverperiode = emptyList(),
+            førsteFraværsdag = JANUAR_1,
+            begrunnelseForReduksjonEllerIkkeUtbetalt = "Ferie"
+        )
+
+        assertFalse(forespørsel.erInntektsmeldingRelevant(im))
+    }
+
+    @Test
     fun `trenger ikke arbeidsgiverperiode - relevant hvis første fraværsdag overlapper`() {
         val forespørsel = forespørsel(
             skjæringstidspunkt = JANUAR_18,
