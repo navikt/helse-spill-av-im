@@ -13,6 +13,7 @@ class TrengerArbeidsgiveropplysningerTest {
     private companion object {
         private val JANUAR_1 = LocalDate.of(2018, 1, 1)
         private val JANUAR_16 = LocalDate.of(2018, 1, 16)
+        private val JANUAR_17 = LocalDate.of(2018, 1, 17)
         private val JANUAR_31 = LocalDate.of(2018, 1, 31)
         private val FEBRUAR_1 = LocalDate.of(2018, 2, 1)
         private val FEBRUAR_5 = LocalDate.of(2018, 2, 5)
@@ -80,7 +81,22 @@ class TrengerArbeidsgiveropplysningerTest {
 
     @Test
     fun `trenger arbeidsgiverperiode - relevant hvis arbeidsgiverperioden er rett før`() {
+        val forespørsel = forespørsel(
+            skjæringstidspunkt = JANUAR_17,
+            førsteFraværsdag = JANUAR_17,
+            sykmeldingsperioder = listOf(
+                TrengerArbeidsgiveropplysninger.Periode(JANUAR_17, JANUAR_31)
+            ),
+            egenmeldinger = emptyList(),
+            harForespurtArbeidsgiverperiode = true
+        )
+        val im = im(
+            arbeidsgiverperiode = listOf(Periode(JANUAR_1, JANUAR_16)),
+            førsteFraværsdag = JANUAR_1,
+            begrunnelseForReduksjonEllerIkkeUtbetalt = null
+        )
 
+        assertTrue(forespørsel.erInntektsmeldingRelevant(im))
     }
 
     @Test

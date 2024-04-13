@@ -5,6 +5,7 @@ import no.nav.helse.rapids_rivers.*
 import no.nav.inntektsmeldingkontrakt.Inntektsmelding
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -121,9 +122,9 @@ internal class TrengerArbeidsgiveropplysninger(
 
         private fun overlapperPeriodeMedForespørsel(dato: LocalDate) = overlapperPeriodeMedForespørsel(Periode(dato, dato))
         private fun overlapperPeriodeMedForespørsel(datoperiode: Periode): Boolean {
-            return (førsteFraværsdag != null && datoperiode.overlapper(førsteFraværsdag.dato))
-                    || sykmeldingsperioder.any { datoperiode.overlapper(it) }
-                    || egenmeldinger.any { datoperiode.overlapper(it) }
+            return (førsteFraværsdag != null && Periode(førsteFraværsdag.dato, førsteFraværsdag.dato).overlapperEllerRettFør(datoperiode))
+                    || sykmeldingsperioder.any { it.overlapperEllerRettFør(datoperiode) }
+                    || egenmeldinger.any { it.overlapperEllerRettFør(datoperiode) }
         }
 
         fun erInntektsmeldingRelevant(inntektsmelding: Inntektsmelding): Boolean {
@@ -165,8 +166,16 @@ internal class TrengerArbeidsgiveropplysninger(
         }
     }
     data class Periode(val fom: LocalDate, val tom: LocalDate) {
-        fun overlapper(dato: LocalDate) = dato in fom..tom
-        fun overlapper(other: Periode): Boolean {
+        fun overlapperEllerRettFør(dato: LocalDate) = overlapperEllerRettFør(Periode(dato, dato))
+        fun overlapperEllerRettFør(periode: Periode) =
+            when (periode.tom.dayOfWeek) {
+                DayOfWeek.FRIDAY -> overlapper(Periode(periode.fom, periode.tom.plusDays(3)))
+                DayOfWeek.SATURDAY -> overlapper(Periode(periode.fom, periode.tom.plusDays(2)))
+                else -> overlapper(Periode(periode.fom, periode.tom.plusDays(1)))
+            }
+
+        private fun overlapper(dato: LocalDate) = dato in fom..tom
+        private fun overlapper(other: Periode): Boolean {
             return maxOf(this.fom, other.fom) <= minOf(this.tom, other.tom)
         }
     }
