@@ -122,7 +122,7 @@ class InntektsmeldingDao(private val dataSource: () -> DataSource) {
             SELECT i.id, i.intern_dokument_id, i.forste_fravarsdag, i.data
             FROM inntektsmelding i
             LEFT JOIN handtering h ON h.inntektsmelding_id=i.id 
-            WHERE i.fnr = ? AND i.virksomhetsnummer = ? AND i.avsendersystem != 'NAV_NO' AND h.inntektsmelding_id IS NULL
+            WHERE i.fnr = ? AND i.virksomhetsnummer = ? AND (i.avsendersystem IS NULL OR i.avsendersystem != 'NAV_NO') AND h.inntektsmelding_id IS NULL
         """
     }
 }
