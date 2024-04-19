@@ -79,7 +79,7 @@ internal class TrengerInntektsmeldingReplay(
         }
     }
 
-    private fun replayInntektsmeldinger(context: MessageContext, forespørsel: Forespørsel, aktuelleForReplay: List<Inntektsmelding>) {
+    private fun replayInntektsmeldinger(context: MessageContext, forespørsel: Forespørsel, aktuelleForReplay: List<Pair<UUID, Inntektsmelding>>) {
         val melding = JsonMessage.newMessage("inntektsmeldinger_replay", mapOf(
             "fødselsnummer" to forespørsel.fnr,
             "aktørId" to forespørsel.aktørId,
@@ -87,13 +87,19 @@ internal class TrengerInntektsmeldingReplay(
             "vedtaksperiodeId" to forespørsel.vedtaksperiodeId,
             "inntektsmeldinger" to aktuelleForReplay
                 .take(MAKSIMALT_ANTALL_INNTEKTSMELDINGER)
-                .map { objectMapper.convertValue<Map<String, Any?>>(it) }
+                .map { (internDokumentId, im) ->
+                    val inntektsmeldingSomMap = objectMapper.convertValue<Map<String, Any?>>(im)
+                    mapOf(
+                        "internDokumentId" to internDokumentId,
+                        "inntektsmelding" to inntektsmeldingSomMap
+                    )
+                }
         ))
         sikkerlogg.info("publiserer: ${melding.toJson()}")
         context.publish(melding.toJson())
     }
 
-    private fun håndterForespørselOmInntektsmelding(forespørsel: Forespørsel): List<Inntektsmelding> {
+    private fun håndterForespørselOmInntektsmelding(forespørsel: Forespørsel): List<Pair<UUID, Inntektsmelding>> {
         logg.info("Håndterer trenger_inntektsmelding_replay")
         sikkerlogg.info("Håndterer trenger_inntektsmelding_replay:\n\t$forespørsel")
 
@@ -108,14 +114,16 @@ internal class TrengerInntektsmeldingReplay(
         }
 
         val aktuelleForReplay = inntektsmeldinger
-            .mapNotNull {
-                it.inntektsmelding.getOrElse { err ->
+            .mapNotNull { dto ->
+                dto.inntektsmelding.getOrElse { err ->
                     logg.info("Kunne ikke tolke inntektsmelding fordi: ${err.message}", err)
                     sikkerlogg.info("Kunne ikke tolke inntektsmelding fordi: ${err.message}", err)
                     null
+                }?.let {
+                    dto.internDokumentId to it
                 }
             }
-            .filter { forespørsel.erInntektsmeldingRelevant(it) }
+            .filter { (_, im) -> forespørsel.erInntektsmeldingRelevant(im) }
         if (aktuelleForReplay.isEmpty()) ingenAktuelleInntektsmeldinger()
 
         logg.info("Vil replaye ${aktuelleForReplay.size} inntektsmeldinger")

@@ -60,6 +60,7 @@ class InntektsmeldingDao(private val dataSource: () -> DataSource) {
         return sessionOf(dataSource()).use {
             it.run(queryOf(UHÅNDTERT_IM, fnr, orgnr).map { rad ->
                 InntektsmeldingDto(
+                    internDokumentId = rad.uuid("intern_dokument_id"),
                     førsteFraværsdag = rad.localDateOrNull("forste_fravarsdag"),
                     data = rad.string("data")
                 )
@@ -86,7 +87,7 @@ class InntektsmeldingDao(private val dataSource: () -> DataSource) {
         """
         @Language("PostgreSQL")
         private const val UHÅNDTERT_IM = """
-            SELECT i.forste_fravarsdag, i.data
+            SELECT i.intern_dokument_id, i.forste_fravarsdag, i.data
             FROM inntektsmelding i
             LEFT JOIN handtering h ON h.inntektsmelding_id=i.id 
             WHERE i.fnr = ? AND i.virksomhetsnummer = ? AND i.avsendersystem != 'NAV_NO' AND h.inntektsmelding_id IS NULL
@@ -94,6 +95,7 @@ class InntektsmeldingDao(private val dataSource: () -> DataSource) {
     }
 }
 data class InntektsmeldingDto(
+    val internDokumentId: UUID,
     val førsteFraværsdag: LocalDate?,
     val data: String
 ) {
