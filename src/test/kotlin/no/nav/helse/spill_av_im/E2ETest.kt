@@ -61,6 +61,7 @@ class E2ETest {
     @Test
     fun `replayer inntektsmelding uten inntektsmeldinger`() {
         testRapid.sendTestMessage(lagInntektsmeldingReplay())
+        verifiserAntallReplayforespørsler(1)
     }
 
     @Test
@@ -75,6 +76,7 @@ class E2ETest {
         )
         testRapid.sendTestMessage(lagInntektsmeldingReplay())
         verifiserInntektsmeldingFinnes(internId)
+        verifiserAntallReplayforespørsler(1)
     }
 
     @Test
@@ -99,6 +101,14 @@ class E2ETest {
         val stmt = "SELECT EXISTS(SELECT 1 FROM inntektsmelding WHERE intern_dokument_id = ?)"
         assertEquals(true, sessionOf(dataSource.ds).use {
             it.run(queryOf(stmt, id).map { row -> row.boolean(1) }.asSingle)
+        })
+    }
+
+    private fun verifiserAntallReplayforespørsler(antall: Int) {
+        @Language("PostgreSQL")
+        val stmt = "SELECT COUNT(1) FROM replay_foresporsel"
+        assertEquals(antall, sessionOf(dataSource.ds).use {
+            it.run(queryOf(stmt).map { row -> row.int(1) }.asSingle)
         })
     }
 

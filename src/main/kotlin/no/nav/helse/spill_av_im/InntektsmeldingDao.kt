@@ -84,17 +84,16 @@ class InntektsmeldingDao(private val dataSource: () -> DataSource) {
         run(queryOf(FINN_IM_ID, mapOf("internId" to internId)).map { it.long("id") }.asSingle)
 
     internal fun nyReplayforespørsel(fnr: String, orgnr: String, vedtaksperiodeId: UUID, innsendt: LocalDateTime, inntektsmeldinger: List<Long>): Long {
-        sessionOf(dataSource()).use {
+        return sessionOf(dataSource()).use {
             it.transaction {
-                val replayId = it.run(queryOf("""insert into replay_foresporsel (innsendt, registrert, fnr, virksomhetsnummer, vedtaksperiode_id)
-                VALUES(:innsendt, now(), :fnr, :orgnr, :vedtaksperiodeId) RETURNING id""", mapOf(
+                val replayId = it.run(queryOf(NY_FORESPØRSEL, mapOf(
                     "innsendt" to innsendt.atZone(ZoneId.systemDefault()),
                     "fnr" to fnr,
                     "orgnr" to orgnr,
                     "vedtaksperiodeId" to vedtaksperiodeId
                 )).map { it.long(1) }.asSingle) ?: error("Kunne ikke lagre replayforespørsel")
                 knyttInntektsmeldingerTilReplay(it, replayId, inntektsmeldinger)
-                return replayId
+                return@transaction replayId
             }
         }
     }
@@ -105,6 +104,12 @@ class InntektsmeldingDao(private val dataSource: () -> DataSource) {
     }
 
     private companion object {
+        @Language("PostgreSQL")
+        private const val NY_FORESPØRSEL = """
+            INSERT INTO replay_foresporsel (innsendt, registrert, fnr, virksomhetsnummer, vedtaksperiode_id)
+            VALUES (:innsendt, now(), :fnr, :orgnr, :vedtaksperiodeId)
+            RETURNING id
+        """
         @Language("PostgreSQL")
         private const val INSERT_IM = """
             INSERT INTO inntektsmelding(fnr, virksomhetsnummer, ekstern_dokument_id, intern_dokument_id, registrert, innsendt, avsendersystem, forste_fravarsdag, inntektsdato, data)
