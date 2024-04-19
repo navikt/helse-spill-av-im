@@ -10,6 +10,8 @@ import kotliquery.sessionOf
 import no.nav.inntektsmeldingkontrakt.Inntektsmelding
 import org.intellij.lang.annotations.Language
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.UUID
 import javax.sql.DataSource
@@ -60,6 +62,7 @@ class InntektsmeldingDao(private val dataSource: () -> DataSource) {
         return sessionOf(dataSource()).use {
             it.run(queryOf(UHÅNDTERT_IM, fnr, orgnr).map { rad ->
                 InntektsmeldingDto(
+                    id = rad.long("id"),
                     internDokumentId = rad.uuid("intern_dokument_id"),
                     førsteFraværsdag = rad.localDateOrNull("forste_fravarsdag"),
                     data = rad.string("data")
@@ -80,6 +83,26 @@ class InntektsmeldingDao(private val dataSource: () -> DataSource) {
     private fun Session.finnInntektsmeldingId(internId: UUID) =
         run(queryOf(FINN_IM_ID, mapOf("internId" to internId)).map { it.long("id") }.asSingle)
 
+    internal fun nyReplayforespørsel(fnr: String, orgnr: String, vedtaksperiodeId: UUID, innsendt: LocalDateTime, inntektsmeldinger: List<Long>): Long {
+        sessionOf(dataSource(), returnGeneratedKey = true).use {
+            it.transaction {
+                val replayId = it.run(queryOf("""insert into replay_foresporsel (innsendt, registrert, fnr, virksomhetsnummer, vedtaksperiode_id)
+                VALUES(:innsendt, now(), :fnr, :orgnr, :vedtaksperiodeId)""", mapOf(
+                    "innsendt" to innsendt.atZone(ZoneId.systemDefault()),
+                    "fnr" to fnr,
+                    "orgnr" to orgnr,
+                    "vedtaksperiodeId" to vedtaksperiodeId
+                )).asUpdateAndReturnGeneratedKey) ?: error("Kunne ikke lagre replayforespørsel")
+                knyttInntektsmeldingerTilReplay(it, replayId, inntektsmeldinger)
+                return replayId
+            }
+        }
+    }
+
+    private fun knyttInntektsmeldingerTilReplay(session: Session, replayId: Long, inntektsmeldinger: List<Long>) {
+        session.run(queryOf("""insert into replay (replay_foresporsel_id,inntektsmelding_id) VALUES ${inntektsmeldinger.joinToString { "($replayId, $it)" }}""").asExecute)
+    }
+
     private companion object {
         @Language("PostgreSQL")
         private const val INSERT_IM = """
@@ -96,7 +119,7 @@ class InntektsmeldingDao(private val dataSource: () -> DataSource) {
         """
         @Language("PostgreSQL")
         private const val UHÅNDTERT_IM = """
-            SELECT i.intern_dokument_id, i.forste_fravarsdag, i.data
+            SELECT i.id, i.intern_dokument_id, i.forste_fravarsdag, i.data
             FROM inntektsmelding i
             LEFT JOIN handtering h ON h.inntektsmelding_id=i.id 
             WHERE i.fnr = ? AND i.virksomhetsnummer = ? AND i.avsendersystem != 'NAV_NO' AND h.inntektsmelding_id IS NULL
@@ -104,6 +127,7 @@ class InntektsmeldingDao(private val dataSource: () -> DataSource) {
     }
 }
 data class InntektsmeldingDto(
+    val id: Long,
     val internDokumentId: UUID,
     val førsteFraværsdag: LocalDate?,
     val data: String

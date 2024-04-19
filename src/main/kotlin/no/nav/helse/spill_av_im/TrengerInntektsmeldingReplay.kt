@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 
@@ -74,19 +75,21 @@ internal class TrengerInntektsmeldingReplay(
                     harForespurtArbeidsgiverperiode = packet["trengerArbeidsgiverperiode"].asBoolean()
                 )
                 val aktuelleForReplay = håndterForespørselOmInntektsmelding(forespørsel)
-                replayInntektsmeldinger(context, forespørsel, aktuelleForReplay)
+                replayInntektsmeldinger(context, forespørsel, aktuelleForReplay, packet["@opprettet"].asLocalDateTime())
             }
         }
     }
 
-    private fun replayInntektsmeldinger(context: MessageContext, forespørsel: Forespørsel, aktuelleForReplay: List<Pair<UUID, Inntektsmelding>>) {
+    private fun replayInntektsmeldinger(context: MessageContext, forespørsel: Forespørsel, aktuelleForReplay: List<Triple<Long, UUID, Inntektsmelding>>, innsendt: LocalDateTime) {
+        val inntektsmeldinger = aktuelleForReplay.take(MAKSIMALT_ANTALL_INNTEKTSMELDINGER)
+        val replayId = dao.nyReplayforespørsel(forespørsel.fnr, forespørsel.orgnr, forespørsel.vedtaksperiodeId, innsendt, inntektsmeldinger.map { it.first })
         val melding = JsonMessage.newMessage("inntektsmeldinger_replay", mapOf(
             "fødselsnummer" to forespørsel.fnr,
             "aktørId" to forespørsel.aktørId,
             "organisasjonsnummer" to forespørsel.orgnr,
             "vedtaksperiodeId" to forespørsel.vedtaksperiodeId,
-            "inntektsmeldinger" to aktuelleForReplay
-                .take(MAKSIMALT_ANTALL_INNTEKTSMELDINGER)
+            "replayId" to replayId,
+            "inntektsmeldinger" to inntektsmeldinger
                 .map { (internDokumentId, im) ->
                     val inntektsmeldingSomMap = objectMapper.convertValue<Map<String, Any?>>(im)
                     mapOf(
@@ -99,7 +102,7 @@ internal class TrengerInntektsmeldingReplay(
         context.publish(melding.toJson())
     }
 
-    private fun håndterForespørselOmInntektsmelding(forespørsel: Forespørsel): List<Pair<UUID, Inntektsmelding>> {
+    private fun håndterForespørselOmInntektsmelding(forespørsel: Forespørsel): List<Triple<Long, UUID, Inntektsmelding>> {
         logg.info("Håndterer trenger_inntektsmelding_replay")
         sikkerlogg.info("Håndterer trenger_inntektsmelding_replay:\n\t$forespørsel")
 
@@ -120,10 +123,10 @@ internal class TrengerInntektsmeldingReplay(
                     sikkerlogg.info("Kunne ikke tolke inntektsmelding fordi: ${err.message}", err)
                     null
                 }?.let {
-                    dto.internDokumentId to it
+                    Triple(dto.id, dto.internDokumentId, it)
                 }
             }
-            .filter { (_, im) -> forespørsel.erInntektsmeldingRelevant(im) }
+            .filter { (_, _, im) -> forespørsel.erInntektsmeldingRelevant(im) }
         if (aktuelleForReplay.isEmpty()) ingenAktuelleInntektsmeldinger()
 
         logg.info("Vil replaye ${aktuelleForReplay.size} inntektsmeldinger")
