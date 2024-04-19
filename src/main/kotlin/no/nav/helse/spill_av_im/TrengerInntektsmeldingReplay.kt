@@ -10,20 +10,20 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.*
 
-internal class TrengerArbeidsgiveropplysninger(
+internal class TrengerInntektsmeldingReplay(
     rapidsConnection: RapidsConnection,
     private val dao: InntektsmeldingDao
 ): River.PacketListener {
 
     private companion object {
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
-        private val logg = LoggerFactory.getLogger(TrengerArbeidsgiveropplysninger::class.java)
+        private val logg = LoggerFactory.getLogger(TrengerInntektsmeldingReplay::class.java)
     }
 
     init {
         River(rapidsConnection).apply {
             validate {
-                it.demandValue("@event_name", "trenger_opplysninger_fra_arbeidsgiver")
+                it.demandValue("@event_name", "trenger_inntektsmelding_replay")
                 it.requireKey("@id", "fødselsnummer", "organisasjonsnummer", "vedtaksperiodeId")
                 it.require("@opprettet", JsonNode::asLocalDateTime)
                 it.require("skjæringstidspunkt", JsonNode::asLocalDate)
@@ -39,16 +39,14 @@ internal class TrengerArbeidsgiveropplysninger(
                     requireKey("organisasjonsnummer")
                     require("førsteFraværsdag", JsonNode::asLocalDate)
                 }
-                it.requireArray("forespurteOpplysninger") {
-                    requireKey("opplysningstype")
-                }
+                it.requireKey("trengerArbeidsgiverperiode")
             }
         }.register(this)
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext) {
-        logg.info("Håndterer ikke trenger_opplysninger_fra_arbeidsgiver pga. problem: se sikker logg")
-        sikkerlogg.info("Håndterer ikke trenger_opplysninger_fra_arbeidsgiver pga. problem: {}", problems.toExtendedReport())
+        logg.info("Håndterer ikke trenger_inntektsmelding_replay pga. problem: se sikker logg")
+        sikkerlogg.info("Håndterer ikke trenger_inntektsmelding_replay pga. problem: {}", problems.toExtendedReport())
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext) {
@@ -63,9 +61,7 @@ internal class TrengerArbeidsgiveropplysninger(
                     førsteFraværsdager = packet["førsteFraværsdager"].map { FørsteFraværsdag(it.path("organisasjonsnummer").asText(), it.path("førsteFraværsdag").asLocalDate()) },
                     sykmeldingsperioder = packet["sykmeldingsperioder"].map { Periode(it.path("fom").asLocalDate(), it.path("tom").asLocalDate()) },
                     egenmeldinger = packet["egenmeldingsperioder"].map { Periode(it.path("fom").asLocalDate(), it.path("tom").asLocalDate()) },
-                    harForespurtArbeidsgiverperiode = packet["forespurteOpplysninger"].any {
-                        it.path("opplysningstype").asText() == "Arbeidsgiverperiode"
-                    }
+                    harForespurtArbeidsgiverperiode = packet["trengerArbeidsgiverperiode"].asBoolean()
                 )
                 håndterForespørselOmInntektsmelding(forespørsel)
             }
@@ -73,8 +69,8 @@ internal class TrengerArbeidsgiveropplysninger(
     }
 
     private fun håndterForespørselOmInntektsmelding(forespørsel: Forespørsel) {
-        logg.info("Håndterer trenger_opplysninger_fra_arbeidsgiver")
-        sikkerlogg.info("Håndterer trenger_opplysninger_fra_arbeidsgiver:\n\t$forespørsel")
+        logg.info("Håndterer trenger_inntektsmelding_replay")
+        sikkerlogg.info("Håndterer trenger_inntektsmelding_replay:\n\t$forespørsel")
 
         val inntektsmeldinger = dao.finnUhåndterteInntektsmeldinger(
             fnr = forespørsel.fnr,

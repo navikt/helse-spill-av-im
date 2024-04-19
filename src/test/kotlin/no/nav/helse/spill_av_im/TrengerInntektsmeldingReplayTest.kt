@@ -9,7 +9,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
 
-class TrengerArbeidsgiveropplysningerTest {
+class TrengerInntektsmeldingReplayTest {
     private companion object {
         private val JANUAR_1 = LocalDate.of(2018, 1, 1)
         private val JANUAR_16 = LocalDate.of(2018, 1, 16)
@@ -26,7 +26,7 @@ class TrengerArbeidsgiveropplysningerTest {
             skjæringstidspunkt = JANUAR_1,
             førsteFraværsdag = JANUAR_1,
             sykmeldingsperioder = listOf(
-                TrengerArbeidsgiveropplysninger.Periode(JANUAR_1, JANUAR_31)
+                TrengerInntektsmeldingReplay.Periode(JANUAR_1, JANUAR_31)
             ),
             egenmeldinger = emptyList(),
             harForespurtArbeidsgiverperiode = true
@@ -46,7 +46,7 @@ class TrengerArbeidsgiveropplysningerTest {
             skjæringstidspunkt = JANUAR_1,
             førsteFraværsdag = JANUAR_1,
             sykmeldingsperioder = listOf(
-                TrengerArbeidsgiveropplysninger.Periode(JANUAR_1, JANUAR_31)
+                TrengerInntektsmeldingReplay.Periode(JANUAR_1, JANUAR_31)
             ),
             egenmeldinger = emptyList(),
             harForespurtArbeidsgiverperiode = true
@@ -66,7 +66,7 @@ class TrengerArbeidsgiveropplysningerTest {
             skjæringstidspunkt = JANUAR_1,
             førsteFraværsdag = JANUAR_1,
             sykmeldingsperioder = listOf(
-                TrengerArbeidsgiveropplysninger.Periode(JANUAR_1, JANUAR_31)
+                TrengerInntektsmeldingReplay.Periode(JANUAR_1, JANUAR_31)
             ),
             egenmeldinger = emptyList(),
             harForespurtArbeidsgiverperiode = true
@@ -86,7 +86,7 @@ class TrengerArbeidsgiveropplysningerTest {
             skjæringstidspunkt = JANUAR_17,
             førsteFraværsdag = JANUAR_17,
             sykmeldingsperioder = listOf(
-                TrengerArbeidsgiveropplysninger.Periode(JANUAR_17, JANUAR_31)
+                TrengerInntektsmeldingReplay.Periode(JANUAR_17, JANUAR_31)
             ),
             egenmeldinger = emptyList(),
             harForespurtArbeidsgiverperiode = true
@@ -106,7 +106,7 @@ class TrengerArbeidsgiveropplysningerTest {
             skjæringstidspunkt = JANUAR_17,
             førsteFraværsdag = JANUAR_17,
             sykmeldingsperioder = listOf(
-                TrengerArbeidsgiveropplysninger.Periode(JANUAR_17, JANUAR_31)
+                TrengerInntektsmeldingReplay.Periode(JANUAR_17, JANUAR_31)
             ),
             egenmeldinger = emptyList(),
             harForespurtArbeidsgiverperiode = true
@@ -126,7 +126,7 @@ class TrengerArbeidsgiveropplysningerTest {
             skjæringstidspunkt = JANUAR_17,
             førsteFraværsdag = JANUAR_17,
             sykmeldingsperioder = listOf(
-                TrengerArbeidsgiveropplysninger.Periode(JANUAR_17, JANUAR_31)
+                TrengerInntektsmeldingReplay.Periode(JANUAR_17, JANUAR_31)
             ),
             egenmeldinger = emptyList(),
             harForespurtArbeidsgiverperiode = true
@@ -146,7 +146,7 @@ class TrengerArbeidsgiveropplysningerTest {
             skjæringstidspunkt = JANUAR_18,
             førsteFraværsdag = JANUAR_18,
             sykmeldingsperioder = listOf(
-                TrengerArbeidsgiveropplysninger.Periode(JANUAR_18, JANUAR_31)
+                TrengerInntektsmeldingReplay.Periode(JANUAR_18, JANUAR_31)
             ),
             egenmeldinger = emptyList(),
             harForespurtArbeidsgiverperiode = false
@@ -166,7 +166,7 @@ class TrengerArbeidsgiveropplysningerTest {
             skjæringstidspunkt = JANUAR_18,
             førsteFraværsdag = JANUAR_18,
             sykmeldingsperioder = listOf(
-                TrengerArbeidsgiveropplysninger.Periode(JANUAR_18, JANUAR_31)
+                TrengerInntektsmeldingReplay.Periode(JANUAR_18, JANUAR_31)
             ),
             egenmeldinger = emptyList(),
             harForespurtArbeidsgiverperiode = false
@@ -183,16 +183,16 @@ class TrengerArbeidsgiveropplysningerTest {
     private fun forespørsel(
         skjæringstidspunkt: LocalDate,
         førsteFraværsdag: LocalDate,
-        sykmeldingsperioder: List<TrengerArbeidsgiveropplysninger.Periode>,
-        egenmeldinger: List<TrengerArbeidsgiveropplysninger.Periode>,
+        sykmeldingsperioder: List<TrengerInntektsmeldingReplay.Periode>,
+        egenmeldinger: List<TrengerInntektsmeldingReplay.Periode>,
         harForespurtArbeidsgiverperiode: Boolean = true
-    ) = TrengerArbeidsgiveropplysninger.Forespørsel(
+    ) = TrengerInntektsmeldingReplay.Forespørsel(
         fnr = "",
         orgnr = "",
         vedtaksperiodeId = UUID.randomUUID(),
         skjæringstidspunkt = skjæringstidspunkt,
         førsteFraværsdager = listOf(
-            TrengerArbeidsgiveropplysninger.FørsteFraværsdag(
+            TrengerInntektsmeldingReplay.FørsteFraværsdag(
                 orgnr = "",
                 dato = førsteFraværsdag
             )
