@@ -90,7 +90,7 @@ internal class TrengerInntektsmeldingReplay(
             "vedtaksperiodeId" to forespørsel.vedtaksperiodeId,
             "replayId" to replayId,
             "inntektsmeldinger" to inntektsmeldinger
-                .map { (internDokumentId, im) ->
+                .map { (_, internDokumentId, im) ->
                     val inntektsmeldingSomMap = objectMapper.convertValue<Map<String, Any?>>(im)
                     mapOf(
                         "internDokumentId" to internDokumentId,

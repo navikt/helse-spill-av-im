@@ -84,15 +84,15 @@ class InntektsmeldingDao(private val dataSource: () -> DataSource) {
         run(queryOf(FINN_IM_ID, mapOf("internId" to internId)).map { it.long("id") }.asSingle)
 
     internal fun nyReplayforespørsel(fnr: String, orgnr: String, vedtaksperiodeId: UUID, innsendt: LocalDateTime, inntektsmeldinger: List<Long>): Long {
-        sessionOf(dataSource(), returnGeneratedKey = true).use {
+        sessionOf(dataSource()).use {
             it.transaction {
                 val replayId = it.run(queryOf("""insert into replay_foresporsel (innsendt, registrert, fnr, virksomhetsnummer, vedtaksperiode_id)
-                VALUES(:innsendt, now(), :fnr, :orgnr, :vedtaksperiodeId)""", mapOf(
+                VALUES(:innsendt, now(), :fnr, :orgnr, :vedtaksperiodeId) RETURNING id""", mapOf(
                     "innsendt" to innsendt.atZone(ZoneId.systemDefault()),
                     "fnr" to fnr,
                     "orgnr" to orgnr,
                     "vedtaksperiodeId" to vedtaksperiodeId
-                )).asUpdateAndReturnGeneratedKey) ?: error("Kunne ikke lagre replayforespørsel")
+                )).map { it.long(1) }.asSingle) ?: error("Kunne ikke lagre replayforespørsel")
                 knyttInntektsmeldingerTilReplay(it, replayId, inntektsmeldinger)
                 return replayId
             }
@@ -100,6 +100,7 @@ class InntektsmeldingDao(private val dataSource: () -> DataSource) {
     }
 
     private fun knyttInntektsmeldingerTilReplay(session: Session, replayId: Long, inntektsmeldinger: List<Long>) {
+        if (inntektsmeldinger.isEmpty()) return
         session.run(queryOf("""insert into replay (replay_foresporsel_id,inntektsmelding_id) VALUES ${inntektsmeldinger.joinToString { "($replayId, $it)" }}""").asExecute)
     }
 

@@ -37,6 +37,7 @@ class E2ETest {
     private val testRapid = TestRapid().apply {
         InntektsmeldingRegistrertRiver(this, dao)
         InntektsmeldingHåndtertRiver(this, dao)
+        TrengerInntektsmeldingReplay(this, dao)
     }
 
     @BeforeEach
@@ -54,6 +55,25 @@ class E2ETest {
     fun `registrerer inntektsmelding`() {
         val internId = UUID.randomUUID()
         testRapid.sendTestMessage(lagInntektsmelding(internId))
+        verifiserInntektsmeldingFinnes(internId)
+    }
+
+    @Test
+    fun `replayer inntektsmelding uten inntektsmeldinger`() {
+        testRapid.sendTestMessage(lagInntektsmeldingReplay())
+    }
+
+    @Test
+    fun `replayer inntektsmelding`() {
+        val internId = UUID.randomUUID()
+        testRapid.sendTestMessage(lagInntektsmelding(internId,
+            arbeidsgiverperioder = listOf(
+                LocalDate.of(2024, 2, 1)..LocalDate.of(2024, 2, 16)
+            ),
+            førsteFraværsdag = LocalDate.of(2024, 2, 1),
+            avsendersystem = "AltinnPortal")
+        )
+        testRapid.sendTestMessage(lagInntektsmeldingReplay())
         verifiserInntektsmeldingFinnes(internId)
     }
 
@@ -114,10 +134,40 @@ class E2ETest {
         return body
     }
 
+    private fun lagInntektsmeldingReplay(): String {
+        @Language("JSON")
+        val body = """{
+  "@event_name": "trenger_inntektsmelding_replay",
+  "organisasjonsnummer": "$A1",
+  "vedtaksperiodeId": "${UUID.randomUUID()}",
+  "skjæringstidspunkt": "2024-02-01",
+  "sykmeldingsperioder": [
+    {
+      "fom": "2024-02-01",
+      "tom": "2024-02-29"
+    }
+  ],
+  "egenmeldingsperioder": [],
+  "førsteFraværsdager": [
+    {
+      "organisasjonsnummer": "$A1",
+      "førsteFraværsdag": "2024-02-01"
+    }
+  ],
+  "trengerArbeidsgiverperiode": true,
+  "@id": "${UUID.randomUUID()}",
+  "@opprettet": "${LocalDateTime.now()}",
+  "aktørId": "aktørId",
+  "fødselsnummer": "$FNR"
+}"""
+        return body
+    }
+
     private fun lagInntektsmelding(
         internId: UUID = UUID.randomUUID(),
         eksternId: UUID = UUID.randomUUID(),
         virksomhetsnummer: String? = A1,
+        arbeidsgiverperioder: List<ClosedRange<LocalDate>> = emptyList(),
         førsteFraværsdag: LocalDate? = LocalDate.of(2018, 1, 1),
         inntektsdato: LocalDate? = LocalDate.of(2018, 1, 1),
         mottattidspunkt: LocalDateTime = LocalDateTime.now(),
@@ -126,7 +176,7 @@ class E2ETest {
         inntektsmeldingId = eksternId.toString(),
         arbeidstakerFnr = FNR,
         virksomhetsnummer = virksomhetsnummer,
-        arbeidsgiverperioder = emptyList(),
+        arbeidsgiverperioder = arbeidsgiverperioder.map { Periode(it.start, it.endInclusive) },
         foersteFravaersdag = førsteFraværsdag,
         inntektsdato = inntektsdato,
         avsenderSystem = avsendersystem?.let { AvsenderSystem(it, "1.0.0") },
