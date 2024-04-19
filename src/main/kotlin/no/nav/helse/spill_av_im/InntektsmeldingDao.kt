@@ -68,6 +68,15 @@ class InntektsmeldingDao(private val dataSource: () -> DataSource) {
         }
     }
 
+    internal fun slett(fnr: String) {
+        sessionOf(dataSource()).use {
+            it.transaction {
+                it.run(queryOf("DELETE FROM inntektsmelding WHERE fnr=:fnr", mapOf("fnr" to fnr)).asExecute)
+                it.run(queryOf("DELETE FROM replay_foresporsel WHERE fnr=:fnr", mapOf("fnr" to fnr)).asExecute)
+            }
+        }
+    }
+
     private fun Session.finnInntektsmeldingId(internId: UUID) =
         run(queryOf(FINN_IM_ID, mapOf("internId" to internId)).map { it.long("id") }.asSingle)
 

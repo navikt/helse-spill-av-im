@@ -27,6 +27,7 @@ fun main() {
 
     RapidApplication.create(env)
         .apply {
+            if (System.getenv("NAIS_CLUSTER_NAME") == "dev-gcp") SlettPersonRiver(this, dao)
             InntektsmeldingRegistrertRiver(this, dao)
             InntektsmeldingHåndtertRiver(this, dao)
             TrengerInntektsmeldingReplay(this, dao)
