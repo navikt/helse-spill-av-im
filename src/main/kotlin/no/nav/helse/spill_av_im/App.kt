@@ -12,8 +12,14 @@ private val logg = LoggerFactory.getLogger(::main.javaClass)
 private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
 
 fun main() {
-    val env = System.getenv()
-
+    try {
+        app()
+    } catch (err: Exception) {
+        logg.error("Uncaught exception: ${err.message}", err)
+        sikkerlogg.error("Uncaught exception: ${err.message}", err)
+    }
+}
+private fun app(env: Map<String, String> = System.getenv()) {
     val hikariConfig = HikariConfig().apply {
         jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s", env.getValue("DATABASE_HOST"), env.getValue("DATABASE_PORT"), env.getValue("DATABASE_DATABASE"))
         username = env.getValue("DATABASE_USERNAME")
