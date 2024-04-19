@@ -1,6 +1,11 @@
 package no.nav.helse.spill_av_im
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.convertValue
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import no.nav.helse.rapids_rivers.*
 import no.nav.inntektsmeldingkontrakt.Inntektsmelding
 import org.slf4j.LoggerFactory
@@ -18,13 +23,17 @@ internal class TrengerInntektsmeldingReplay(
     private companion object {
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         private val logg = LoggerFactory.getLogger(TrengerInntektsmeldingReplay::class.java)
+        private val objectMapper = jacksonObjectMapper()
+            .registerModule(JavaTimeModule())
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        private const val MAKSIMALT_ANTALL_INNTEKTSMELDINGER = 10
     }
 
     init {
         River(rapidsConnection).apply {
             validate {
                 it.demandValue("@event_name", "trenger_inntektsmelding_replay")
-                it.requireKey("@id", "fødselsnummer", "organisasjonsnummer", "vedtaksperiodeId")
+                it.requireKey("@id", "fødselsnummer", "aktørId", "organisasjonsnummer", "vedtaksperiodeId")
                 it.require("@opprettet", JsonNode::asLocalDateTime)
                 it.require("skjæringstidspunkt", JsonNode::asLocalDate)
                 it.requireArray("sykmeldingsperioder") {
@@ -55,6 +64,7 @@ internal class TrengerInntektsmeldingReplay(
             MDC.putCloseable("vedtaksperiodeId", vedtaksperiodeId.toString()).use {
                 val forespørsel = Forespørsel(
                     fnr = packet["fødselsnummer"].asText(),
+                    aktørId = packet["aktørId"].asText(),
                     orgnr = packet["organisasjonsnummer"].asText(),
                     vedtaksperiodeId = vedtaksperiodeId,
                     skjæringstidspunkt = packet["skjæringstidspunkt"].asLocalDate(),
@@ -63,12 +73,27 @@ internal class TrengerInntektsmeldingReplay(
                     egenmeldinger = packet["egenmeldingsperioder"].map { Periode(it.path("fom").asLocalDate(), it.path("tom").asLocalDate()) },
                     harForespurtArbeidsgiverperiode = packet["trengerArbeidsgiverperiode"].asBoolean()
                 )
-                håndterForespørselOmInntektsmelding(forespørsel)
+                val aktuelleForReplay = håndterForespørselOmInntektsmelding(forespørsel)
+                replayInntektsmeldinger(context, forespørsel, aktuelleForReplay)
             }
         }
     }
 
-    private fun håndterForespørselOmInntektsmelding(forespørsel: Forespørsel) {
+    private fun replayInntektsmeldinger(context: MessageContext, forespørsel: Forespørsel, aktuelleForReplay: List<Inntektsmelding>) {
+        val melding = JsonMessage.newMessage("inntektsmeldinger_replay", mapOf(
+            "fødselsnummer" to forespørsel.fnr,
+            "aktørId" to forespørsel.aktørId,
+            "organisasjonsnummer" to forespørsel.orgnr,
+            "vedtaksperiodeId" to forespørsel.vedtaksperiodeId,
+            "inntektsmeldinger" to aktuelleForReplay
+                .take(MAKSIMALT_ANTALL_INNTEKTSMELDINGER)
+                .map { objectMapper.convertValue<Map<String, Any?>>(it) }
+        ))
+        sikkerlogg.info("publiserer: ${melding.toJson()}")
+        context.publish(melding.toJson())
+    }
+
+    private fun håndterForespørselOmInntektsmelding(forespørsel: Forespørsel): List<Inntektsmelding> {
         logg.info("Håndterer trenger_inntektsmelding_replay")
         sikkerlogg.info("Håndterer trenger_inntektsmelding_replay:\n\t$forespørsel")
 
@@ -77,7 +102,10 @@ internal class TrengerInntektsmeldingReplay(
             orgnr = forespørsel.orgnr
         )
 
-        if (inntektsmeldinger.isEmpty()) return ingenUhåndterteInntektsmeldinger()
+        if (inntektsmeldinger.isEmpty()) {
+            ingenUhåndterteInntektsmeldinger()
+            return emptyList()
+        }
 
         val aktuelleForReplay = inntektsmeldinger
             .mapNotNull {
@@ -88,10 +116,11 @@ internal class TrengerInntektsmeldingReplay(
                 }
             }
             .filter { forespørsel.erInntektsmeldingRelevant(it) }
-        if (aktuelleForReplay.isEmpty()) return ingenAktuelleInntektsmeldinger()
+        if (aktuelleForReplay.isEmpty()) ingenAktuelleInntektsmeldinger()
 
-        logg.info("Ville replayet ${aktuelleForReplay.size} inntektsmeldinger")
-        sikkerlogg.info("Ville replayet ${aktuelleForReplay.size} inntektsmeldinger")
+        logg.info("Vil replaye ${aktuelleForReplay.size} inntektsmeldinger")
+        sikkerlogg.info("Vil replaye ${aktuelleForReplay.size} inntektsmeldinger:\n${aktuelleForReplay.joinToString(separator = "\n\n")}")
+        return aktuelleForReplay
     }
 
     private fun ingenUhåndterteInntektsmeldinger() {
@@ -106,6 +135,7 @@ internal class TrengerInntektsmeldingReplay(
 
     data class Forespørsel(
         val fnr: String,
+        val aktørId: String,
         val orgnr: String,
         val vedtaksperiodeId: UUID,
         val skjæringstidspunkt: LocalDate,

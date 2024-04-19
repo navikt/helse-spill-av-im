@@ -188,6 +188,7 @@ class TrengerInntektsmeldingReplayTest {
         harForespurtArbeidsgiverperiode: Boolean = true
     ) = TrengerInntektsmeldingReplay.Forespørsel(
         fnr = "",
+        aktørId = "",
         orgnr = "",
         vedtaksperiodeId = UUID.randomUUID(),
         skjæringstidspunkt = skjæringstidspunkt,
