@@ -229,6 +229,27 @@ class TrengerInntektsmeldingReplayTest {
         assertTrue(forespørsel.erInntektsmeldingRelevant(im))
     }
 
+    @Test
+    fun `trenger ikke arbeidsgiverperiode - relevant hvis første fraværsdag er inni agp og siste dag i agp er rett før søknaden`() {
+        val forespørsel = forespørsel(
+            skjæringstidspunkt = JANUAR_1,
+            førsteFraværsdag = JANUAR_1,
+            sykmeldingsperioder = listOf(
+                Periode(JANUAR_17, JANUAR_31)
+            ),
+            egenmeldinger = emptyList(),
+            harForespurtArbeidsgiverperiode = false,
+            erPotensiell = false
+        )
+        val im = im(
+            arbeidsgiverperiode = listOf(no.nav.inntektsmeldingkontrakt.Periode(JANUAR_1, JANUAR_16)),
+            førsteFraværsdag = JANUAR_1,
+            begrunnelseForReduksjonEllerIkkeUtbetalt = null
+        )
+
+        assertTrue(forespørsel.erInntektsmeldingRelevant(im))
+    }
+
     private fun forespørsel(
         skjæringstidspunkt: LocalDate,
         førsteFraværsdag: LocalDate,

@@ -77,8 +77,8 @@ data class Forespørsel(
 
         // dagen må overlappe med forespørselens første fraværsdag, en sykmeldings- eller egenmeldingsperiode
         return dato == førsteFraværsdag?.dato
-                || sykmeldingsperioder.any { it.overlapper(dato) }
-                || egenmeldinger.any { it.overlapper(dato) }
+                || sykmeldingsperioder.any { it.overlapperEllerRettFør(dato) }
+                || egenmeldinger.any { it.overlapperEllerRettFør(dato) }
     }
 
     // hvis vedtaksperioden har bedt om arbeidsgiverperiode så må
