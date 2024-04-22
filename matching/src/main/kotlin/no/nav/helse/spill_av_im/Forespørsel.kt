@@ -72,7 +72,7 @@ data class Forespørsel(
         // for forespørsler som ikke trenger AGP så må forespørselen overlappe
         // med første fraværsdag (eller AGP om første fraværsdag ikke er oppgitt/er inni AGP)
         val sisteDag = im.arbeidsgiverperioder.maxOfOrNull { it.tom }
-        val foersteFravaersdag = im.foersteFravaersdag
+        val foersteFravaersdag = im.foersteFravaersdag?.takeIf { sisteDag == null || it > sisteDag }
         val dato = foersteFravaersdag ?: sisteDag ?: return false
 
         // dagen må overlappe med forespørselens første fraværsdag, en sykmeldings- eller egenmeldingsperiode

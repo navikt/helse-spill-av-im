@@ -12,6 +12,7 @@ import java.util.*
 class TrengerInntektsmeldingReplayTest {
     private companion object {
         private val JANUAR_1 = LocalDate.of(2018, 1, 1)
+        private val JANUAR_3 = LocalDate.of(2018, 1, 3)
         private val JANUAR_4 = LocalDate.of(2018, 1, 4)
         private val JANUAR_16 = LocalDate.of(2018, 1, 16)
         private val JANUAR_17 = LocalDate.of(2018, 1, 17)
@@ -202,6 +203,30 @@ class TrengerInntektsmeldingReplayTest {
         )
 
         assertFalse(forespørsel.erInntektsmeldingRelevant(im))
+    }
+
+    @Test
+    fun `trenger ikke arbeidsgiverperiode - relevant hvis agp overlapper og første fraværsdag er inni agp`() {
+        val forespørsel = forespørsel(
+            skjæringstidspunkt = JANUAR_4,
+            førsteFraværsdag = JANUAR_4,
+            sykmeldingsperioder = listOf(
+                Periode(JANUAR_4, JANUAR_31)
+            ),
+            egenmeldinger = emptyList(),
+            harForespurtArbeidsgiverperiode = false,
+            erPotensiell = false
+        )
+        val im = im(
+            arbeidsgiverperiode = listOf(
+                no.nav.inntektsmeldingkontrakt.Periode(JANUAR_1, JANUAR_1),
+                no.nav.inntektsmeldingkontrakt.Periode(JANUAR_3, JANUAR_17)
+            ),
+            førsteFraværsdag = JANUAR_3,
+            begrunnelseForReduksjonEllerIkkeUtbetalt = null
+        )
+
+        assertTrue(forespørsel.erInntektsmeldingRelevant(im))
     }
 
     private fun forespørsel(
