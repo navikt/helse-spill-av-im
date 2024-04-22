@@ -12,12 +12,36 @@ import java.util.*
 class TrengerInntektsmeldingReplayTest {
     private companion object {
         private val JANUAR_1 = LocalDate.of(2018, 1, 1)
+        private val JANUAR_4 = LocalDate.of(2018, 1, 4)
         private val JANUAR_16 = LocalDate.of(2018, 1, 16)
         private val JANUAR_17 = LocalDate.of(2018, 1, 17)
         private val JANUAR_18 = LocalDate.of(2018, 1, 18)
+        private val JANUAR_19 = LocalDate.of(2018, 1, 19)
+        private val JANUAR_22 = LocalDate.of(2018, 1, 22)
         private val JANUAR_31 = LocalDate.of(2018, 1, 31)
         private val FEBRUAR_1 = LocalDate.of(2018, 2, 1)
         private val FEBRUAR_5 = LocalDate.of(2018, 2, 5)
+    }
+
+    @Test
+    fun `trenger arbeidsgiverperiode - arbeidsgiverperiode slutter på fredag, kort periode med potensiell forespørsel starter mandag`() {
+        val forespørsel = forespørsel(
+            skjæringstidspunkt = JANUAR_22,
+            førsteFraværsdag = JANUAR_22,
+            sykmeldingsperioder = listOf(
+                Periode(JANUAR_22, JANUAR_31)
+            ),
+            egenmeldinger = emptyList(),
+            harForespurtArbeidsgiverperiode = false,
+            erPotensiell = true
+        )
+        val im = im(
+            arbeidsgiverperiode = listOf(no.nav.inntektsmeldingkontrakt.Periode(JANUAR_4, JANUAR_19)),
+            førsteFraværsdag = JANUAR_4,
+            begrunnelseForReduksjonEllerIkkeUtbetalt = null
+        )
+
+        assertTrue(forespørsel.erInntektsmeldingRelevant(im))
     }
 
     @Test
@@ -185,7 +209,8 @@ class TrengerInntektsmeldingReplayTest {
         førsteFraværsdag: LocalDate,
         sykmeldingsperioder: List<Periode>,
         egenmeldinger: List<Periode>,
-        harForespurtArbeidsgiverperiode: Boolean = true
+        harForespurtArbeidsgiverperiode: Boolean = true,
+        erPotensiell: Boolean = false
     ) = Forespørsel(
         fnr = "",
         aktørId = "",
@@ -200,7 +225,8 @@ class TrengerInntektsmeldingReplayTest {
         ),
         sykmeldingsperioder = sykmeldingsperioder,
         egenmeldinger = egenmeldinger,
-        harForespurtArbeidsgiverperiode = harForespurtArbeidsgiverperiode
+        harForespurtArbeidsgiverperiode = harForespurtArbeidsgiverperiode,
+        erPotensiellForespørsel = erPotensiell
     )
 
     private fun im(

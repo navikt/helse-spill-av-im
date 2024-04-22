@@ -1,6 +1,5 @@
 package no.nav.helse.spill_av_im
 
-import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -10,10 +9,7 @@ import no.nav.helse.rapids_rivers.*
 import no.nav.inntektsmeldingkontrakt.Inntektsmelding
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
-import java.time.DayOfWeek
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
 import java.util.*
 
 internal class TrengerInntektsmeldingReplay(
@@ -50,6 +46,7 @@ internal class TrengerInntektsmeldingReplay(
                     require("førsteFraværsdag", JsonNode::asLocalDate)
                 }
                 it.requireKey("trengerArbeidsgiverperiode")
+                it.interestedIn("potensiellForespørsel")
             }
         }.register(this)
     }
@@ -72,7 +69,8 @@ internal class TrengerInntektsmeldingReplay(
                     førsteFraværsdager = packet["førsteFraværsdager"].map { FørsteFraværsdag(it.path("organisasjonsnummer").asText(), it.path("førsteFraværsdag").asLocalDate()) },
                     sykmeldingsperioder = packet["sykmeldingsperioder"].map { Periode(it.path("fom").asLocalDate(), it.path("tom").asLocalDate()) },
                     egenmeldinger = packet["egenmeldingsperioder"].map { Periode(it.path("fom").asLocalDate(), it.path("tom").asLocalDate()) },
-                    harForespurtArbeidsgiverperiode = packet["trengerArbeidsgiverperiode"].asBoolean()
+                    harForespurtArbeidsgiverperiode = packet["trengerArbeidsgiverperiode"].asBoolean(),
+                    erPotensiellForespørsel = packet["potensiellForespørsel"].asBoolean(false),
                 )
                 val aktuelleForReplay = håndterForespørselOmInntektsmelding(forespørsel)
                 replayInntektsmeldinger(context, forespørsel, aktuelleForReplay, packet["@opprettet"].asLocalDateTime())
