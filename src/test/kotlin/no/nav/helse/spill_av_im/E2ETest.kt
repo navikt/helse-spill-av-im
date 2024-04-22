@@ -11,6 +11,7 @@ import kotliquery.queryOf
 import kotliquery.sessionOf
 import no.nav.helse.rapids_rivers.testsupport.TestRapid
 import no.nav.inntektsmeldingkontrakt.*
+import no.nav.inntektsmeldingkontrakt.Periode
 import org.intellij.lang.annotations.Language
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*

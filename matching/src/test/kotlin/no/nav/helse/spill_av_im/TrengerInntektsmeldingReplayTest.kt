@@ -26,13 +26,13 @@ class TrengerInntektsmeldingReplayTest {
             skjæringstidspunkt = JANUAR_1,
             førsteFraværsdag = JANUAR_1,
             sykmeldingsperioder = listOf(
-                TrengerInntektsmeldingReplay.Periode(JANUAR_1, JANUAR_31)
+                Periode(JANUAR_1, JANUAR_31)
             ),
             egenmeldinger = emptyList(),
             harForespurtArbeidsgiverperiode = true
         )
         val im = im(
-            arbeidsgiverperiode = listOf(Periode(JANUAR_1, JANUAR_16)),
+            arbeidsgiverperiode = listOf(no.nav.inntektsmeldingkontrakt.Periode(JANUAR_1, JANUAR_16)),
             førsteFraværsdag = JANUAR_1,
             begrunnelseForReduksjonEllerIkkeUtbetalt = null
         )
@@ -46,13 +46,13 @@ class TrengerInntektsmeldingReplayTest {
             skjæringstidspunkt = JANUAR_1,
             førsteFraværsdag = JANUAR_1,
             sykmeldingsperioder = listOf(
-                TrengerInntektsmeldingReplay.Periode(JANUAR_1, JANUAR_31)
+                Periode(JANUAR_1, JANUAR_31)
             ),
             egenmeldinger = emptyList(),
             harForespurtArbeidsgiverperiode = true
         )
         val im = im(
-            arbeidsgiverperiode = listOf(Periode(JANUAR_1, JANUAR_16)),
+            arbeidsgiverperiode = listOf(no.nav.inntektsmeldingkontrakt.Periode(JANUAR_1, JANUAR_16)),
             førsteFraværsdag = FEBRUAR_1,
             begrunnelseForReduksjonEllerIkkeUtbetalt = null
         )
@@ -66,13 +66,13 @@ class TrengerInntektsmeldingReplayTest {
             skjæringstidspunkt = JANUAR_1,
             førsteFraværsdag = JANUAR_1,
             sykmeldingsperioder = listOf(
-                TrengerInntektsmeldingReplay.Periode(JANUAR_1, JANUAR_31)
+                Periode(JANUAR_1, JANUAR_31)
             ),
             egenmeldinger = emptyList(),
             harForespurtArbeidsgiverperiode = true
         )
         val im = im(
-            arbeidsgiverperiode = listOf(Periode(JANUAR_1, JANUAR_16)),
+            arbeidsgiverperiode = listOf(no.nav.inntektsmeldingkontrakt.Periode(JANUAR_1, JANUAR_16)),
             førsteFraværsdag = FEBRUAR_5,
             begrunnelseForReduksjonEllerIkkeUtbetalt = null
         )
@@ -86,13 +86,13 @@ class TrengerInntektsmeldingReplayTest {
             skjæringstidspunkt = JANUAR_17,
             førsteFraværsdag = JANUAR_17,
             sykmeldingsperioder = listOf(
-                TrengerInntektsmeldingReplay.Periode(JANUAR_17, JANUAR_31)
+                Periode(JANUAR_17, JANUAR_31)
             ),
             egenmeldinger = emptyList(),
             harForespurtArbeidsgiverperiode = true
         )
         val im = im(
-            arbeidsgiverperiode = listOf(Periode(JANUAR_1, JANUAR_16)),
+            arbeidsgiverperiode = listOf(no.nav.inntektsmeldingkontrakt.Periode(JANUAR_1, JANUAR_16)),
             førsteFraværsdag = JANUAR_1,
             begrunnelseForReduksjonEllerIkkeUtbetalt = null
         )
@@ -106,7 +106,7 @@ class TrengerInntektsmeldingReplayTest {
             skjæringstidspunkt = JANUAR_17,
             førsteFraværsdag = JANUAR_17,
             sykmeldingsperioder = listOf(
-                TrengerInntektsmeldingReplay.Periode(JANUAR_17, JANUAR_31)
+                Periode(JANUAR_17, JANUAR_31)
             ),
             egenmeldinger = emptyList(),
             harForespurtArbeidsgiverperiode = true
@@ -126,7 +126,7 @@ class TrengerInntektsmeldingReplayTest {
             skjæringstidspunkt = JANUAR_17,
             førsteFraværsdag = JANUAR_17,
             sykmeldingsperioder = listOf(
-                TrengerInntektsmeldingReplay.Periode(JANUAR_17, JANUAR_31)
+                Periode(JANUAR_17, JANUAR_31)
             ),
             egenmeldinger = emptyList(),
             harForespurtArbeidsgiverperiode = true
@@ -146,13 +146,13 @@ class TrengerInntektsmeldingReplayTest {
             skjæringstidspunkt = JANUAR_18,
             førsteFraværsdag = JANUAR_18,
             sykmeldingsperioder = listOf(
-                TrengerInntektsmeldingReplay.Periode(JANUAR_18, JANUAR_31)
+                Periode(JANUAR_18, JANUAR_31)
             ),
             egenmeldinger = emptyList(),
             harForespurtArbeidsgiverperiode = false
         )
         val im = im(
-            arbeidsgiverperiode = listOf(Periode(JANUAR_1, JANUAR_16)),
+            arbeidsgiverperiode = listOf(no.nav.inntektsmeldingkontrakt.Periode(JANUAR_1, JANUAR_16)),
             førsteFraværsdag = JANUAR_18,
             begrunnelseForReduksjonEllerIkkeUtbetalt = null
         )
@@ -166,13 +166,13 @@ class TrengerInntektsmeldingReplayTest {
             skjæringstidspunkt = JANUAR_18,
             førsteFraværsdag = JANUAR_18,
             sykmeldingsperioder = listOf(
-                TrengerInntektsmeldingReplay.Periode(JANUAR_18, JANUAR_31)
+                Periode(JANUAR_18, JANUAR_31)
             ),
             egenmeldinger = emptyList(),
             harForespurtArbeidsgiverperiode = false
         )
         val im = im(
-            arbeidsgiverperiode = listOf(Periode(JANUAR_1, JANUAR_16)),
+            arbeidsgiverperiode = listOf(no.nav.inntektsmeldingkontrakt.Periode(JANUAR_1, JANUAR_16)),
             førsteFraværsdag = JANUAR_1,
             begrunnelseForReduksjonEllerIkkeUtbetalt = null
         )
@@ -183,17 +183,17 @@ class TrengerInntektsmeldingReplayTest {
     private fun forespørsel(
         skjæringstidspunkt: LocalDate,
         førsteFraværsdag: LocalDate,
-        sykmeldingsperioder: List<TrengerInntektsmeldingReplay.Periode>,
-        egenmeldinger: List<TrengerInntektsmeldingReplay.Periode>,
+        sykmeldingsperioder: List<Periode>,
+        egenmeldinger: List<Periode>,
         harForespurtArbeidsgiverperiode: Boolean = true
-    ) = TrengerInntektsmeldingReplay.Forespørsel(
+    ) = Forespørsel(
         fnr = "",
         aktørId = "",
         orgnr = "",
         vedtaksperiodeId = UUID.randomUUID(),
         skjæringstidspunkt = skjæringstidspunkt,
         førsteFraværsdager = listOf(
-            TrengerInntektsmeldingReplay.FørsteFraværsdag(
+            FørsteFraværsdag(
                 orgnr = "",
                 dato = førsteFraværsdag
             )
@@ -204,7 +204,7 @@ class TrengerInntektsmeldingReplayTest {
     )
 
     private fun im(
-        arbeidsgiverperiode: List<Periode>,
+        arbeidsgiverperiode: List<no.nav.inntektsmeldingkontrakt.Periode>,
         førsteFraværsdag: LocalDate?,
         begrunnelseForReduksjonEllerIkkeUtbetalt: String? = null
     ) = Inntektsmelding(

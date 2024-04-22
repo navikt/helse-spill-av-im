@@ -41,7 +41,7 @@ dependencies {
     implementation("org.postgresql:postgresql:$postgresqlVersion")
     implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
 
-    implementation("no.nav.sykepenger.kontrakter:inntektsmelding-kontrakt:$innteksmeldingKontraktVersion")
+    implementation(project("matching"))
 
     testImplementation("com.github.navikt.tbd-libs:postgres-testdatabaser:$tbdLibsVersion")
 
