@@ -25,6 +25,28 @@ class TrengerInntektsmeldingReplayTest {
     }
 
     @Test
+    fun `portalinnsendt inntektsmelding er ikke relevant`() {
+        val forespørsel = forespørsel(
+            skjæringstidspunkt = JANUAR_1,
+            førsteFraværsdag = JANUAR_1,
+            sykmeldingsperioder = listOf(
+                Periode(JANUAR_1, JANUAR_31)
+            ),
+            egenmeldinger = emptyList(),
+            harForespurtArbeidsgiverperiode = true,
+            erPotensiell = false
+        )
+        val im = im(
+            arbeidsgiverperiode = listOf(no.nav.inntektsmeldingkontrakt.Periode(JANUAR_1, JANUAR_16)),
+            førsteFraværsdag = JANUAR_1,
+            begrunnelseForReduksjonEllerIkkeUtbetalt = null,
+            avsenderSystem = AvsenderSystem("NAV_NO")
+        )
+
+        assertFalse(forespørsel.erInntektsmeldingRelevant(im))
+    }
+
+    @Test
     fun `trenger arbeidsgiverperiode - arbeidsgiverperiode slutter på fredag, kort periode med potensiell forespørsel starter mandag`() {
         val forespørsel = forespørsel(
             skjæringstidspunkt = JANUAR_22,
@@ -278,7 +300,8 @@ class TrengerInntektsmeldingReplayTest {
     private fun im(
         arbeidsgiverperiode: List<no.nav.inntektsmeldingkontrakt.Periode>,
         førsteFraværsdag: LocalDate?,
-        begrunnelseForReduksjonEllerIkkeUtbetalt: String? = null
+        begrunnelseForReduksjonEllerIkkeUtbetalt: String? = null,
+        avsenderSystem: AvsenderSystem? = null
     ) = Inntektsmelding(
         inntektsmeldingId = UUID.randomUUID().toString(),
         arbeidstakerFnr = "fnr",
@@ -303,6 +326,6 @@ class TrengerInntektsmeldingReplayTest {
         naerRelasjon = null,
         innsenderTelefon = "",
         innsenderFulltNavn = "",
-        avsenderSystem = AvsenderSystem("LPS", "V1.0")
+        avsenderSystem = avsenderSystem ?: AvsenderSystem("LPS", "V1.0")
     )
 }
