@@ -22,7 +22,7 @@ class TrengerInntektsmeldingReplayTest {
         private val JANUAR_31 = LocalDate.of(2018, 1, 31)
         private val FEBRUAR_1 = LocalDate.of(2018, 2, 1)
         private val FEBRUAR_5 = LocalDate.of(2018, 2, 5)
-        private val FEBRUAR_10 = LocalDate.of(2018, 2, 5)
+        private val FEBRUAR_10 = LocalDate.of(2018, 2, 10)
         private val FEBRUAR_28 = LocalDate.of(2018, 2, 28)
     }
 
