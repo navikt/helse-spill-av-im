@@ -22,6 +22,8 @@ class TrengerInntektsmeldingReplayTest {
         private val JANUAR_31 = LocalDate.of(2018, 1, 31)
         private val FEBRUAR_1 = LocalDate.of(2018, 2, 1)
         private val FEBRUAR_5 = LocalDate.of(2018, 2, 5)
+        private val FEBRUAR_10 = LocalDate.of(2018, 2, 5)
+        private val FEBRUAR_28 = LocalDate.of(2018, 2, 28)
     }
 
     @Test
@@ -270,6 +272,27 @@ class TrengerInntektsmeldingReplayTest {
         )
 
         assertTrue(forespørsel.erInntektsmeldingRelevant(im))
+    }
+
+    @Test
+    fun `trenger arbeidsgiverperiode? - relevant hvis begrunnelse for reduksjon er FerieEllerAvspasering`() {
+        val forespørsel = forespørsel(
+            skjæringstidspunkt = FEBRUAR_10,
+            førsteFraværsdag = FEBRUAR_10,
+            sykmeldingsperioder = listOf(
+                Periode(FEBRUAR_10, FEBRUAR_28)
+            ),
+            egenmeldinger = emptyList(),
+            harForespurtArbeidsgiverperiode = true,
+            erPotensiell = false
+        )
+        val im = im(
+            arbeidsgiverperiode = listOf(no.nav.inntektsmeldingkontrakt.Periode(JANUAR_1, JANUAR_16)),
+            førsteFraværsdag = FEBRUAR_10,
+            begrunnelseForReduksjonEllerIkkeUtbetalt = "FerieEllerAvspasering"
+        )
+        // gjenstand for diskusjon
+        assertFalse(forespørsel.erInntektsmeldingRelevant(im))
     }
 
     private fun forespørsel(
