@@ -275,7 +275,7 @@ class TrengerInntektsmeldingReplayTest {
     }
 
     @Test
-    fun `trenger arbeidsgiverperiode? - relevant hvis begrunnelse for reduksjon er FerieEllerAvspasering`() {
+    fun `trenger arbeidsgiverperiode - relevant hvis begrunnelse for reduksjon er FerieEllerAvspasering og avstanden er mer enn 20 dager`() {
         val forespørsel = forespørsel(
             skjæringstidspunkt = FEBRUAR_10,
             førsteFraværsdag = FEBRUAR_10,
@@ -292,7 +292,7 @@ class TrengerInntektsmeldingReplayTest {
             begrunnelseForReduksjonEllerIkkeUtbetalt = "FerieEllerAvspasering"
         )
         // gjenstand for diskusjon
-        assertFalse(forespørsel.erInntektsmeldingRelevant(im))
+        assertTrue(forespørsel.erInntektsmeldingRelevant(im))
     }
 
     private fun forespørsel(
