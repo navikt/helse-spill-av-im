@@ -67,7 +67,7 @@ data class Forespørsel(
      * └────────────────────────┴──────────────────────┴─────────────────┴─────────────────────────────────┴─────────────────────────────────────────┘
      */
     fun erInntektsmeldingRelevant(inntektsmelding: Inntektsmelding): Boolean {
-        if (inntektsmelding.avsenderSystem?.navn == "NAV_NO") return false
+        if (inntektsmelding.avsenderSystem?.navn in listOf("NAV_NO", "NAV_NO_SELVBESTEMT") ) return false
         return erRelevantForArbeidsgiverperiode(inntektsmelding) || erRelevantForInntektEllerRefusjon(inntektsmelding)
     }
 

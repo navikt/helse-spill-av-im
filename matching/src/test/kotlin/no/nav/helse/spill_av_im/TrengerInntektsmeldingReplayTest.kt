@@ -48,6 +48,28 @@ class TrengerInntektsmeldingReplayTest {
         assertFalse(forespørsel.erInntektsmeldingRelevant(im))
     }
 
+     @Test
+    fun `selvbestemt portalinnsendt inntektsmelding er ikke relevant`() {
+        val forespørsel = forespørsel(
+            skjæringstidspunkt = JANUAR_1,
+            førsteFraværsdag = JANUAR_1,
+            sykmeldingsperioder = listOf(
+                Periode(JANUAR_1, JANUAR_31)
+            ),
+            egenmeldinger = emptyList(),
+            harForespurtArbeidsgiverperiode = true,
+            erPotensiell = false
+        )
+        val im = im(
+            arbeidsgiverperiode = listOf(no.nav.inntektsmeldingkontrakt.Periode(JANUAR_1, JANUAR_16)),
+            førsteFraværsdag = JANUAR_1,
+            begrunnelseForReduksjonEllerIkkeUtbetalt = null,
+            avsenderSystem = AvsenderSystem("NAV_NO_SELVBESTEMT")
+        )
+
+        assertFalse(forespørsel.erInntektsmeldingRelevant(im))
+    }
+
     @Test
     fun `trenger arbeidsgiverperiode - arbeidsgiverperiode slutter på fredag, kort periode med potensiell forespørsel starter mandag`() {
         val forespørsel = forespørsel(
