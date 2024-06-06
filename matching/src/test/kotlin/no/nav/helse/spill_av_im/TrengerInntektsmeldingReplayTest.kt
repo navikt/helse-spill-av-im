@@ -316,6 +316,26 @@ class TrengerInntektsmeldingReplayTest {
         assertTrue(forespørsel.erInntektsmeldingRelevant(im))
     }
 
+    @Test
+    fun `trenger arbeidsgiverperiode - relevant hvis begrunnelse for reduksjon er TidligereVirksomhet og avstanden er mer enn 20 dager`() {
+        val forespørsel = forespørsel(
+            skjæringstidspunkt = FEBRUAR_10,
+            førsteFraværsdag = FEBRUAR_10,
+            sykmeldingsperioder = listOf(
+                Periode(FEBRUAR_10, FEBRUAR_28)
+            ),
+            egenmeldinger = emptyList(),
+            harForespurtArbeidsgiverperiode = true,
+            erPotensiell = false
+        )
+        val im = im(
+            arbeidsgiverperiode = listOf(no.nav.inntektsmeldingkontrakt.Periode(JANUAR_1, JANUAR_16)),
+            førsteFraværsdag = FEBRUAR_10,
+            begrunnelseForReduksjonEllerIkkeUtbetalt = "TidligereVirksomhet"
+        )
+        assertTrue(forespørsel.erInntektsmeldingRelevant(im))
+    }
+
     private fun forespørsel(
         skjæringstidspunkt: LocalDate,
         førsteFraværsdag: LocalDate,

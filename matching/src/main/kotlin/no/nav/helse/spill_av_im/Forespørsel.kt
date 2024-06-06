@@ -38,8 +38,8 @@ data class Forespørsel(
      * │ AGP, Inntekt, Refusjon │ Nei                  │ Ja              │ Ja                              │ Første fraværsdag må overlappe,         │
      * │                        │                      │                 │                                 │   men bare hvis avstanden mellom FF og  │
      * │                        │                      │                 │                                 │   siste dag i AGP er under 20.          │
-     * │                        │                      │                 │                                 │   Med mindre det gjelder ferie!         │
-     * │                        │                      │                 │                                 │   Da tillater vi 90 dagers avstand.     │
+     * │                        │                      │                 │                                 │   Med mindre det gjelder ferie,         │
+     * │                        │                      │                 │                                 │   eller TidligereVirksomhet.            │
      * │                        │                      │                 │                                 │   Ellers må AGP overlappe               │
      * ├────────────────────────┼──────────────────────┼─────────────────┼─────────────────────────────────┼─────────────────────────────────────────┤
      * │ AGP, Inntekt, Refusjon │ Nei                  │ Ja              │ Nei                             │ AGP må overlappe                        │
@@ -51,8 +51,8 @@ data class Forespørsel(
      * │ AGP, Inntekt, Refusjon │ Ja                   │ Ja              │ Ja                              │ Første fraværsdag må overlappe,         │
      * │                        │                      │                 │                                 │   men bare hvis avstanden mellom FF og  │
      * │                        │                      │                 │                                 │   siste dag i AGP er under 20.          │
-     * │                        │                      │                 │                                 │   Med mindre det gjelder ferie!         │
-     * │                        │                      │                 │                                 │   Da tillater vi 90 dagers avstand.     │
+     * │                        │                      │                 │                                 │   Med mindre det gjelder ferie,         │
+     * │                        │                      │                 │                                 │   eller TidligereVirksomhet.            │
      * │                        │                      │                 │                                 │   Ellers må AGP overlappe               │
      * ├────────────────────────┼──────────────────────┼─────────────────┼─────────────────────────────────┼─────────────────────────────────────────┤
      * │////////////////////////│//////////////////////│/////////////////│/////////////////////////////////│/////////////////////////////////////////│
@@ -97,7 +97,6 @@ data class Forespørsel(
     private fun inntektsmeldingGjelderArbeidsgiverperiode(im: Inntektsmelding): Boolean {
         val sisteDag = im.arbeidsgiverperioder.maxOfOrNull { it.tom }
         val redusertUtbetaling = im.begrunnelseForReduksjonEllerIkkeUtbetalt != null
-        val redusertUtbetalingGrunnetFerieEllerAvspasering= im.begrunnelseForReduksjonEllerIkkeUtbetalt == "FerieEllerAvspasering"
         val foersteFravaersdag = im.foersteFravaersdag
 
         // inntektsmelding uten oppgitt AGP er kun relevant
@@ -115,8 +114,9 @@ data class Forespørsel(
         // og det er et maksimalt antall dager mellom FF og siste dag i AGP.
         if (foersteFravaersdag != null && foersteFravaersdag > sisteDag) {
             val dagerMellom = ChronoUnit.DAYS.between(sisteDag, foersteFravaersdag)
-            if (!redusertUtbetalingGrunnetFerieEllerAvspasering && dagerMellom >= MAKS_ANTALL_DAGER_MELLOM_FØRSTE_FRAVÆRSDAG_OG_AGP_FOR_HÅNDTERING_AV_DAGER) return false
-            if (redusertUtbetalingGrunnetFerieEllerAvspasering && dagerMellom >= MAKS_ANTALL_DAGER_MELLOM_FØRSTE_FRAVÆRSDAG_OG_AGP_FOR_HÅNDTERING_AV_DAGER_FERIE) return false
+            val tillaterStorAvstandMellomAgpOgFørsteFraværsdag =
+                im.begrunnelseForReduksjonEllerIkkeUtbetalt == "FerieEllerAvspasering" || im.begrunnelseForReduksjonEllerIkkeUtbetalt == "TidligereVirksomhet"
+            if (!tillaterStorAvstandMellomAgpOgFørsteFraværsdag && dagerMellom >= MAKS_ANTALL_DAGER_MELLOM_FØRSTE_FRAVÆRSDAG_OG_AGP_FOR_HÅNDTERING_AV_DAGER) return false
             if (overlapperPeriodeMedForespørsel(foersteFravaersdag)) return true
         }
         // om første fraværsdag ikke er relevant, eller ikke overlapper, så hensyntar vi arbeidsgiverperioden til slutt
@@ -125,7 +125,6 @@ data class Forespørsel(
 
     private companion object {
         private const val MAKS_ANTALL_DAGER_MELLOM_FØRSTE_FRAVÆRSDAG_OG_AGP_FOR_HÅNDTERING_AV_DAGER = 20
-        private const val MAKS_ANTALL_DAGER_MELLOM_FØRSTE_FRAVÆRSDAG_OG_AGP_FOR_HÅNDTERING_AV_DAGER_FERIE = 365
     }
 }
 data class Periode(val fom: LocalDate, val tom: LocalDate) {
