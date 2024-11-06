@@ -8,7 +8,6 @@ import java.util.*
 
 data class Forespørsel(
     val fnr: String,
-    val aktørId: String,
     val orgnr: String,
     val vedtaksperiodeId: UUID,
     val skjæringstidspunkt: LocalDate,

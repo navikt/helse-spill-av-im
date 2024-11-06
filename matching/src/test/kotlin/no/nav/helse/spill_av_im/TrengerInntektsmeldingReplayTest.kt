@@ -345,7 +345,6 @@ class TrengerInntektsmeldingReplayTest {
         erPotensiell: Boolean = false
     ) = Forespørsel(
         fnr = "",
-        aktørId = "",
         orgnr = "",
         vedtaksperiodeId = UUID.randomUUID(),
         skjæringstidspunkt = skjæringstidspunkt,
