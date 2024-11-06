@@ -1,16 +1,16 @@
-val gradleversjon = "8.5"
-val rapidsAndRiversVersion = "2024020507581707116327.1c34df474331"
+val gradleversjon = "8.10.2"
+val rapidsAndRiversVersion = "2024110520091730833744.40f3b6aa7090"
 val flywayCoreVersion = "10.6.0"
 val hikariCPVersion = "5.1.0"
 val postgresqlVersion = "42.7.2"
 val kotliqueryVersion = "1.9.0"
 
 val innteksmeldingKontraktVersion = "2024.03.11-02-07-32abf"
-val tbdLibsVersion = "2024.02.09-10.44-24d5802f"
+val tbdLibsVersion = "2024.11.06-12.37-f870e704"
 val junitJupiterVersion = "5.10.2"
 
 plugins {
-    kotlin("jvm") version "1.9.22"
+    kotlin("jvm") version "2.0.21"
 }
 
 allprojects {
@@ -43,6 +43,7 @@ dependencies {
 
     implementation(project("matching"))
 
+    testImplementation("com.github.navikt.tbd-libs:rapids-and-rivers-test:$tbdLibsVersion")
     testImplementation("com.github.navikt.tbd-libs:postgres-testdatabaser:$tbdLibsVersion")
 
     testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
