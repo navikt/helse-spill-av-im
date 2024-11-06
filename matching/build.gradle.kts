@@ -1,4 +1,5 @@
-val innteksmeldingKontraktVersion = "2024.03.11-02-07-32abf"
+// finn ny versjon her: https://github.com/navikt/inntektsmelding-kontrakt/packages/36094
+val innteksmeldingKontraktVersion = "2024.05.21-09-56-5528e"
 val junitJupiterVersion = "5.10.2"
 
 plugins {
