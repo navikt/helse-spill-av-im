@@ -168,7 +168,6 @@ class E2ETest {
   "trengerArbeidsgiverperiode": true,
   "@id": "${UUID.randomUUID()}",
   "@opprettet": "${LocalDateTime.now()}",
-  "aktørId": "aktørId",
   "fødselsnummer": "$FNR"
 }"""
         return body

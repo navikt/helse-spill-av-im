@@ -37,7 +37,7 @@ internal class TrengerInntektsmeldingReplay(
         River(rapidsConnection).apply {
             validate {
                 it.demandValue("@event_name", "trenger_inntektsmelding_replay")
-                it.requireKey("@id", "fødselsnummer", "aktørId", "organisasjonsnummer", "vedtaksperiodeId")
+                it.requireKey("@id", "fødselsnummer", "organisasjonsnummer", "vedtaksperiodeId")
                 it.require("@opprettet", JsonNode::asLocalDateTime)
                 it.require("skjæringstidspunkt", JsonNode::asLocalDate)
                 it.requireArray("sykmeldingsperioder") {
@@ -67,7 +67,6 @@ internal class TrengerInntektsmeldingReplay(
         MDC.putCloseable("meldingsreferanseId", packet["@id"].asText()).use {
             val vedtaksperiodeId = packet["vedtaksperiodeId"].asText().toUUID()
             MDC.putCloseable("vedtaksperiodeId", vedtaksperiodeId.toString()).use {
-                val aktørId = packet["aktørId"].asText()
                 val forespørsel = Forespørsel(
                     fnr = packet["fødselsnummer"].asText(),
                     orgnr = packet["organisasjonsnummer"].asText(),
@@ -80,17 +79,16 @@ internal class TrengerInntektsmeldingReplay(
                     erPotensiellForespørsel = packet["potensiellForespørsel"].asBoolean(false),
                 )
                 val aktuelleForReplay = håndterForespørselOmInntektsmelding(forespørsel)
-                replayInntektsmeldinger(context, aktørId, forespørsel, aktuelleForReplay, packet["@opprettet"].asLocalDateTime())
+                replayInntektsmeldinger(context, forespørsel, aktuelleForReplay, packet["@opprettet"].asLocalDateTime())
             }
         }
     }
 
-    private fun replayInntektsmeldinger(context: MessageContext, aktørId: String, forespørsel: Forespørsel, aktuelleForReplay: List<Triple<Long, UUID, Inntektsmelding>>, innsendt: LocalDateTime) {
+    private fun replayInntektsmeldinger(context: MessageContext, forespørsel: Forespørsel, aktuelleForReplay: List<Triple<Long, UUID, Inntektsmelding>>, innsendt: LocalDateTime) {
         val inntektsmeldinger = aktuelleForReplay.take(MAKSIMALT_ANTALL_INNTEKTSMELDINGER)
         val replayId = dao.nyReplayforespørsel(forespørsel.fnr, forespørsel.orgnr, forespørsel.vedtaksperiodeId, innsendt, inntektsmeldinger.map { it.first })
         val melding = JsonMessage.newMessage("inntektsmeldinger_replay", mapOf(
             "fødselsnummer" to forespørsel.fnr,
-            "aktørId" to aktørId,
             "organisasjonsnummer" to forespørsel.orgnr,
             "vedtaksperiodeId" to forespørsel.vedtaksperiodeId,
             "replayId" to replayId,
