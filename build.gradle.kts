@@ -90,9 +90,5 @@ tasks {
         systemProperty("junit.jupiter.execution.parallel.config.strategy", "fixed")
         systemProperty("junit.jupiter.execution.parallel.config.fixed.parallelism", "4")
     }
-
-    withType<Wrapper> {
-        gradleVersion = gradleversjon
-    }
 }
 
