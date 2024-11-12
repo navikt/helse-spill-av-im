@@ -1,4 +1,3 @@
-val gradleversjon = "8.10.2"
 val rapidsAndRiversVersion = "2024110520091730833744.40f3b6aa7090"
 val flywayCoreVersion = "10.6.0"
 val hikariCPVersion = "5.1.0"
