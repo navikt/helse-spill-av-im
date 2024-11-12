@@ -6,7 +6,7 @@ val kotliqueryVersion = "1.9.0"
 
 val innteksmeldingKontraktVersion = "2024.03.11-02-07-32abf"
 val tbdLibsVersion = "2024.11.06-12.37-f870e704"
-val junitJupiterVersion = "5.10.2"
+val junitJupiterVersion = "5.11.3"
 
 plugins {
     kotlin("jvm") version "2.0.21"
