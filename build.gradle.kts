@@ -1,11 +1,11 @@
-val rapidsAndRiversVersion = "2024110520091730833744.40f3b6aa7090"
+val rapidsAndRiversVersion = "2024111211071731406062.648687519469"
 val flywayCoreVersion = "10.6.0"
 val hikariCPVersion = "5.1.0"
 val postgresqlVersion = "42.7.2"
 val kotliqueryVersion = "1.9.0"
 
 val innteksmeldingKontraktVersion = "2024.03.11-02-07-32abf"
-val tbdLibsVersion = "2024.11.06-12.37-f870e704"
+val tbdLibsVersion = "2024.11.12-11.09-16cf2599"
 val junitJupiterVersion = "5.11.3"
 
 plugins {

@@ -7,8 +7,10 @@ import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
 import com.github.navikt.tbd_libs.rapids_and_rivers.asOptionalLocalDate
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
+import io.micrometer.core.instrument.MeterRegistry
 import net.logstash.logback.argument.StructuredArguments.kv
 import org.slf4j.LoggerFactory
 import java.time.ZoneId
@@ -38,12 +40,12 @@ internal class InntektsmeldingRegistrertRiver(
         }.register(this)
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext) {
+    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
         logg.info("Håndterer ikke inntektsmelding pga. problem: se sikker logg")
         sikkerlogg.info("Håndterer ikke inntektsmelding pga. problem: {}", problems.toExtendedReport())
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext) {
+    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         val internId = packet["@id"].asUUID()
         logg.info("Håndterer inntektsmelding {}", kv("meldingsreferanseId", internId))
         sikkerlogg.info("Håndterer inntektsmelding {}", kv("meldingsreferanseId", internId))

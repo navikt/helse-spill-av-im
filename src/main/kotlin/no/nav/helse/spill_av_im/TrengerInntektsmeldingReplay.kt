@@ -11,8 +11,10 @@ import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
 import com.github.navikt.tbd_libs.rapids_and_rivers.toUUID
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
+import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
+import io.micrometer.core.instrument.MeterRegistry
 import no.nav.inntektsmeldingkontrakt.Inntektsmelding
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -58,12 +60,12 @@ internal class TrengerInntektsmeldingReplay(
         }.register(this)
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext) {
+    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
         logg.info("Håndterer ikke trenger_inntektsmelding_replay pga. problem: se sikker logg")
         sikkerlogg.info("Håndterer ikke trenger_inntektsmelding_replay pga. problem: {}", problems.toExtendedReport())
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext) {
+    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
         MDC.putCloseable("meldingsreferanseId", packet["@id"].asText()).use {
             val vedtaksperiodeId = packet["vedtaksperiodeId"].asText().toUUID()
             MDC.putCloseable("vedtaksperiodeId", vedtaksperiodeId.toString()).use {
