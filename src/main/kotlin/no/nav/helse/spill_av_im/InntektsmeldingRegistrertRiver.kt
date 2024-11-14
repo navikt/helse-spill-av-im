@@ -29,8 +29,8 @@ internal class InntektsmeldingRegistrertRiver(
 
     init {
         River(rapidsConnection).apply {
+            precondition { it.requireValue("@event_name", "inntektsmelding") }
             validate {
-                it.demandValue("@event_name", "inntektsmelding")
                 it.requireKey("@id", "inntektsmeldingId", "arbeidstakerFnr")
                 it.interestedIn("virksomhetsnummer", "avsenderSystem.navn")
                 it.require("mottattDato", JsonNode::asLocalDateTime)

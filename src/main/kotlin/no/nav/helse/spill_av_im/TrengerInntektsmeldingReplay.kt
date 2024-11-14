@@ -37,8 +37,8 @@ internal class TrengerInntektsmeldingReplay(
 
     init {
         River(rapidsConnection).apply {
+            precondition { it.requireValue("@event_name", "trenger_inntektsmelding_replay") }
             validate {
-                it.demandValue("@event_name", "trenger_inntektsmelding_replay")
                 it.requireKey("@id", "fødselsnummer", "organisasjonsnummer", "vedtaksperiodeId")
                 it.require("@opprettet", JsonNode::asLocalDateTime)
                 it.require("skjæringstidspunkt", JsonNode::asLocalDate)
