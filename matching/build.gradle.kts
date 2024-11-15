@@ -1,6 +1,7 @@
 // finn ny versjon her: https://github.com/navikt/inntektsmelding-kontrakt/packages/36094
 val innteksmeldingKontraktVersion = "2024.05.21-09-56-5528e"
 val junitJupiterVersion = "5.11.3"
+val jacksonVersion = "2.18.1"
 
 plugins {
     kotlin("jvm") version "2.0.21"
@@ -8,6 +9,11 @@ plugins {
 }
 
 dependencies {
+    constraints {
+        api("com.fasterxml.jackson:jackson-bom:$jacksonVersion") {
+            because("Alle moduler skal bruke samme versjon av jackson")
+        }
+    }
     api("no.nav.sykepenger.kontrakter:inntektsmelding-kontrakt:$innteksmeldingKontraktVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
