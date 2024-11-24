@@ -5,7 +5,7 @@ val postgresqlVersion = "42.7.4"
 val kotliqueryVersion = "1.9.0"
 
 val innteksmeldingKontraktVersion = "2024.03.11-02-07-32abf"
-val tbdLibsVersion = "2024.11.15-09.09-08ca346b"
+val tbdLibsVersion = "2024.11.24-12.01-42fdc22d"
 val junitJupiterVersion = "5.11.3"
 
 plugins {
