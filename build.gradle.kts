@@ -1,4 +1,4 @@
-val rapidsAndRiversVersion = "2024112510241732526640.8542991368ca"
+val rapidsAndRiversVersion = "2024112511071732529266.253c42b70448"
 val flywayCoreVersion = "10.21.0"
 val hikariCPVersion = "6.1.0"
 val postgresqlVersion = "42.7.4"
