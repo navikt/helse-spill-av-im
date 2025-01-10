@@ -4,7 +4,6 @@ val hikariCPVersion = "6.1.0"
 val postgresqlVersion = "42.7.4"
 val kotliqueryVersion = "1.9.0"
 
-val innteksmeldingKontraktVersion = "2024.03.11-02-07-32abf"
 val tbdLibsVersion = "2024.11.25-10.59-6f263a10"
 val junitJupiterVersion = "5.11.3"
 
