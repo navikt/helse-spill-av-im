@@ -39,6 +39,11 @@ spec:
         databases:
           - name: spillavim
             envVarPrefix: DATABASE
+        flags:
+          - name: cloudsql.enable_pgaudit
+            value: "true"
+          - name: pgaudit.log
+            value: 'write'
   env:
     - name: KAFKA_RAPID_TOPIC
       value: tbd.rapid.v1
