@@ -14,9 +14,7 @@ data class Forespørsel(
     val førsteFraværsdager: List<FørsteFraværsdag>,
     val sykmeldingsperioder: List<Periode>,
     val egenmeldinger: List<Periode>,
-    val harForespurtArbeidsgiverperiode: Boolean,
-    // om perioden er i utgangspunktet beregnet til å være innenfor agp av spleis
-    val erPotensiellForespørsel: Boolean
+    val harForespurtArbeidsgiverperiode: Boolean
 ) {
     private val førsteFraværsdag = førsteFraværsdager.firstOrNull { it.orgnr == orgnr }
 
@@ -89,7 +87,7 @@ data class Forespørsel(
     // agp i inntektsmeldingen overlappe med forespørselen, eller så må
     // første fraværsdag overlappe – men kun viss avstanden mellom ff og agp er OK
     private fun erRelevantForArbeidsgiverperiode(im: Inntektsmelding): Boolean {
-        if (!harForespurtArbeidsgiverperiode && !erPotensiellForespørsel) return false
+        if (!harForespurtArbeidsgiverperiode) return false
         return inntektsmeldingGjelderArbeidsgiverperiode(im)
     }
 

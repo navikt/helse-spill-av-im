@@ -35,8 +35,7 @@ class TrengerInntektsmeldingReplayTest {
                 Periode(JANUAR_1, JANUAR_31)
             ),
             egenmeldinger = emptyList(),
-            harForespurtArbeidsgiverperiode = true,
-            erPotensiell = false
+            harForespurtArbeidsgiverperiode = true
         )
         val im = im(
             arbeidsgiverperiode = listOf(no.nav.inntektsmeldingkontrakt.Periode(JANUAR_1, JANUAR_16)),
@@ -57,8 +56,7 @@ class TrengerInntektsmeldingReplayTest {
                 Periode(JANUAR_1, JANUAR_31)
             ),
             egenmeldinger = emptyList(),
-            harForespurtArbeidsgiverperiode = true,
-            erPotensiell = false
+            harForespurtArbeidsgiverperiode = true
         )
         val im = im(
             arbeidsgiverperiode = listOf(no.nav.inntektsmeldingkontrakt.Periode(JANUAR_1, JANUAR_16)),
@@ -79,8 +77,7 @@ class TrengerInntektsmeldingReplayTest {
                 Periode(JANUAR_22, JANUAR_31)
             ),
             egenmeldinger = emptyList(),
-            harForespurtArbeidsgiverperiode = false,
-            erPotensiell = true
+            harForespurtArbeidsgiverperiode = true
         )
         val im = im(
             arbeidsgiverperiode = listOf(no.nav.inntektsmeldingkontrakt.Periode(JANUAR_4, JANUAR_19)),
@@ -260,8 +257,7 @@ class TrengerInntektsmeldingReplayTest {
                 Periode(JANUAR_4, JANUAR_31)
             ),
             egenmeldinger = emptyList(),
-            harForespurtArbeidsgiverperiode = false,
-            erPotensiell = false
+            harForespurtArbeidsgiverperiode = false
         )
         val im = im(
             arbeidsgiverperiode = listOf(
@@ -284,8 +280,7 @@ class TrengerInntektsmeldingReplayTest {
                 Periode(JANUAR_17, JANUAR_31)
             ),
             egenmeldinger = emptyList(),
-            harForespurtArbeidsgiverperiode = false,
-            erPotensiell = false
+            harForespurtArbeidsgiverperiode = false
         )
         val im = im(
             arbeidsgiverperiode = listOf(no.nav.inntektsmeldingkontrakt.Periode(JANUAR_1, JANUAR_16)),
@@ -305,8 +300,7 @@ class TrengerInntektsmeldingReplayTest {
                 Periode(FEBRUAR_10, FEBRUAR_28)
             ),
             egenmeldinger = emptyList(),
-            harForespurtArbeidsgiverperiode = true,
-            erPotensiell = false
+            harForespurtArbeidsgiverperiode = true
         )
         val im = im(
             arbeidsgiverperiode = listOf(no.nav.inntektsmeldingkontrakt.Periode(JANUAR_1, JANUAR_16)),
@@ -325,8 +319,7 @@ class TrengerInntektsmeldingReplayTest {
                 Periode(FEBRUAR_10, FEBRUAR_28)
             ),
             egenmeldinger = emptyList(),
-            harForespurtArbeidsgiverperiode = true,
-            erPotensiell = false
+            harForespurtArbeidsgiverperiode = true
         )
         val im = im(
             arbeidsgiverperiode = listOf(no.nav.inntektsmeldingkontrakt.Periode(JANUAR_1, JANUAR_16)),
@@ -341,8 +334,7 @@ class TrengerInntektsmeldingReplayTest {
         førsteFraværsdag: LocalDate,
         sykmeldingsperioder: List<Periode>,
         egenmeldinger: List<Periode>,
-        harForespurtArbeidsgiverperiode: Boolean = true,
-        erPotensiell: Boolean = false
+        harForespurtArbeidsgiverperiode: Boolean = true
     ) = Forespørsel(
         fnr = "",
         orgnr = "",
@@ -356,8 +348,7 @@ class TrengerInntektsmeldingReplayTest {
         ),
         sykmeldingsperioder = sykmeldingsperioder,
         egenmeldinger = egenmeldinger,
-        harForespurtArbeidsgiverperiode = harForespurtArbeidsgiverperiode,
-        erPotensiellForespørsel = erPotensiell
+        harForespurtArbeidsgiverperiode = harForespurtArbeidsgiverperiode
     )
 
     private fun im(
