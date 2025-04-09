@@ -9,7 +9,6 @@ import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
-import com.github.navikt.tbd_libs.rapids_and_rivers.isMissingOrNull
 import com.github.navikt.tbd_libs.rapids_and_rivers.toUUID
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageContext
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
@@ -55,19 +54,11 @@ internal class TrengerInntektsmeldingReplay(
                     requireKey("organisasjonsnummer")
                     require("førsteFraværsdag", JsonNode::asLocalDate)
                 }
-                it.interestedIn("trengerArbeidsgiverperiode")
-                it.interestedIn("forespurteOpplysninger") { _ ->
-                    it.requireArray("forespurteOpplysninger") {
-                        requireKey("opplysningstype")
-                    }
+                it.requireArray("forespurteOpplysninger") {
+                    requireKey("opplysningstype")
                 }
             }
         }.register(this)
-    }
-
-    private fun JsonMessage.trengerArbeidsgiverperiode(): Boolean {
-        if (get("forespurteOpplysninger").isMissingOrNull()) return get("trengerArbeidsgiverperiode").asBoolean()
-        return get("forespurteOpplysninger").any { it.path("opplysningstype").asText() == "Arbeidsgiverperiode" }
     }
 
     override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
@@ -87,7 +78,7 @@ internal class TrengerInntektsmeldingReplay(
                     førsteFraværsdager = packet["førsteFraværsdager"].map { FørsteFraværsdag(it.path("organisasjonsnummer").asText(), it.path("førsteFraværsdag").asLocalDate()) },
                     sykmeldingsperioder = packet["sykmeldingsperioder"].map { Periode(it.path("fom").asLocalDate(), it.path("tom").asLocalDate()) },
                     egenmeldinger = packet["egenmeldingsperioder"].map { Periode(it.path("fom").asLocalDate(), it.path("tom").asLocalDate()) },
-                    harForespurtArbeidsgiverperiode = packet.trengerArbeidsgiverperiode()
+                    harForespurtArbeidsgiverperiode = packet["forespurteOpplysninger"].any { it.path("opplysningstype").asText() == "Arbeidsgiverperiode" }
                 )
                 val aktuelleForReplay = håndterForespørselOmInntektsmelding(forespørsel)
                 replayInntektsmeldinger(context, forespørsel, aktuelleForReplay, packet["@opprettet"].asLocalDateTime())

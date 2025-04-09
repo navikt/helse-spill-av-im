@@ -25,7 +25,6 @@ class E2ETest {
     private companion object {
         const val FNR = "12345678911"
         const val A1 = "987654321"
-        const val A2 = "112233445"
         private val databaseContainer = DatabaseContainers.container("spekemat", CleanupStrategy.tables("inntektsmelding,handtering,replay_foresporsel,replay"))
         private val objectMapper = jacksonObjectMapper()
             .registerModule(JavaTimeModule())
@@ -76,21 +75,6 @@ class E2ETest {
             avsendersystem = "AltinnPortal")
         )
         testRapid.sendTestMessage(lagInntektsmeldingReplay())
-        verifiserInntektsmeldingFinnes(internId)
-        verifiserAntallReplayforespørsler(1)
-    }
-
-    @Test
-    fun `replayer inntektsmelding med forespurte opplysninger`() {
-        val internId = UUID.randomUUID()
-        testRapid.sendTestMessage(lagInntektsmelding(internId,
-            arbeidsgiverperioder = listOf(
-                LocalDate.of(2024, 2, 1)..LocalDate.of(2024, 2, 16)
-            ),
-            førsteFraværsdag = LocalDate.of(2024, 2, 1),
-            avsendersystem = "AltinnPortal")
-        )
-        testRapid.sendTestMessage(lagInntektsmeldingReplayMedForespurteOpplysninger())
         verifiserInntektsmeldingFinnes(internId)
         verifiserAntallReplayforespørsler(1)
     }
@@ -161,34 +145,6 @@ class E2ETest {
     }
 
     private fun lagInntektsmeldingReplay(): String {
-        @Language("JSON")
-        val body = """{
-  "@event_name": "trenger_inntektsmelding_replay",
-  "organisasjonsnummer": "$A1",
-  "vedtaksperiodeId": "${UUID.randomUUID()}",
-  "skjæringstidspunkt": "2024-02-01",
-  "sykmeldingsperioder": [
-    {
-      "fom": "2024-02-01",
-      "tom": "2024-02-29"
-    }
-  ],
-  "egenmeldingsperioder": [],
-  "førsteFraværsdager": [
-    {
-      "organisasjonsnummer": "$A1",
-      "førsteFraværsdag": "2024-02-01"
-    }
-  ],
-  "trengerArbeidsgiverperiode": true,
-  "@id": "${UUID.randomUUID()}",
-  "@opprettet": "${LocalDateTime.now()}",
-  "fødselsnummer": "$FNR"
-}"""
-        return body
-    }
-
-    private fun lagInntektsmeldingReplayMedForespurteOpplysninger(): String {
         @Language("JSON")
         val body = """{
   "@event_name": "trenger_inntektsmelding_replay",
