@@ -51,3 +51,7 @@ spec:
       value: {{consumerGroupId}}
     - name: KAFKA_RESET_POLICY
       value: EARLIEST
+  observability:
+    logging:
+      destinations:
+        - id: elastic
