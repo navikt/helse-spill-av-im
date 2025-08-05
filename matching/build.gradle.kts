@@ -4,7 +4,7 @@ val junitJupiterVersion = "5.12.1"
 val jacksonVersion = "2.18.3"
 
 plugins {
-    kotlin("jvm") version "2.1.20"
+    kotlin("jvm") version "2.2.0"
     `maven-publish`
 }
 
