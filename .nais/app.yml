@@ -46,7 +46,7 @@ spec:
             envVarPrefix: DATABASE
         flags:
           - name: cloudsql.enable_pgaudit
-            value: "true"
+            value: "{{enablePgAudit}}"
           - name: pgaudit.log
             value: "write,ddl,role"
           - name: pgaudit.log_parameter
