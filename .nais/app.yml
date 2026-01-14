@@ -27,8 +27,6 @@ spec:
   preStopHook:
     http:
       path: /stop
-  secureLogs:
-    enabled: true
   kafka:
     pool: {{kafkaPool}}
   accessPolicy:
