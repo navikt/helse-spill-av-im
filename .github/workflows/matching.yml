@@ -9,7 +9,9 @@ on:
       - 'build.gradle.kts'
       - 'settings.gradle.kts'
       - '.github/workflows/matching.yml'
-
+  schedule:
+    - cron: '0 3 * * 3'
+      timezone: 'Europe/Oslo'
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
