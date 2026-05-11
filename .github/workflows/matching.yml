@@ -9,9 +9,6 @@ on:
       - 'build.gradle.kts'
       - 'settings.gradle.kts'
       - '.github/workflows/matching.yml'
-  schedule:
-    - cron: '0 3 * * 3'
-      timezone: 'Europe/Oslo'
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -39,5 +36,3 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
       - name: upload artifacts
         run: ./gradlew :matching:publish -Pversion="$(echo $VERSION)"
-        env:
-          GITHUB_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
