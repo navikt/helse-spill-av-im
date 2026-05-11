@@ -7,6 +7,9 @@ on:
   schedule:
     - cron: '0 3 * * 3'
       timezone: 'Europe/Oslo'
+  pull_request:
+    branches:
+      - main
 jobs:
   build:
     name: build
