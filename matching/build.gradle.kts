@@ -1,6 +1,6 @@
 // finn ny versjon her: https://github.com/navikt/inntektsmelding-kontrakt/packages/36094
 val innteksmeldingKontraktVersion = "2025.01.09-03-43-0eb17"
-val junitJupiterVersion = "6.0.3"
+val junitJupiterVersion = "6.1.0"
 val jacksonVersion = "2.21.3"
 
 plugins {
