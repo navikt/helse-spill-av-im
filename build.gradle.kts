@@ -1,5 +1,5 @@
 val rapidsAndRiversVersion = "2026011411051768385145.e8ebad1177b4"
-val flywayCoreVersion = "12.8.0"
+val flywayCoreVersion = "12.8.1"
 val hikariCPVersion = "6.3.0"
 val postgresqlVersion = "42.7.11"
 val kotliqueryVersion = "1.9.1"
