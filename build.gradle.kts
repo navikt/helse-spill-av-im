@@ -57,21 +57,20 @@ tasks {
     withType<Jar> {
         archiveBaseName.set("app")
 
-        doFirst {
-            manifest {
-                val runtimeClasspath by configurations
-                attributes["Main-Class"] = "no.nav.helse.spill_av_im.AppKt"
-                attributes["Class-Path"] = runtimeClasspath.joinToString(separator = " ") {
-                    it.name
-                }
-            }
-        }
+        manifest.attributes(
+            mapOf(
+                "Main-Class" to "no.nav.helse.spill_av_im.AppKt",
+                "Class-Path" to configurations.runtimeClasspath
+                    .get()
+                    .joinToString(" ") { it.name }
+            )
+        )
     }
 
-    val copyDeps by registering(Sync::class) {
-        val runtimeClasspath by configurations
-        from(runtimeClasspath)
-        into("build/libs")
+    val copyDeps = register<Sync>("copyDeps") {
+        description = "Kopierer runtime-avhengigheter til libs-mappa"
+        from(configurations.runtimeClasspath)
+        into(layout.buildDirectory.dir("libs"))
     }
     named("assemble") {
         dependsOn(copyDeps)
