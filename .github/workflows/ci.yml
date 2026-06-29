@@ -24,8 +24,9 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21.x'
-          cache: 'gradle'
-      - name: gradle
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+      - name: Gradle build
         run: ./gradlew build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
