@@ -1,6 +1,5 @@
 package no.nav.helse.spill_av_im
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDateTime
@@ -13,6 +12,7 @@ import net.logstash.logback.argument.StructuredArguments.kv
 import org.slf4j.LoggerFactory
 import java.time.ZoneId
 import java.util.*
+import tools.jackson.databind.JsonNode
 
 internal class InntektsmeldingHåndtertRiver(
     rapidsConnection: RapidsConnection,
@@ -45,12 +45,12 @@ internal class InntektsmeldingHåndtertRiver(
         logg.info("Håndterer inntektsmelding_håndtert {}", kv("meldingsreferanseId", internId))
         sikkerlogg.info("Håndterer inntektsmelding_håndtert {}", kv("meldingsreferanseId", internId))
         dao.lagreHåndtering(
-            fnr = packet["fødselsnummer"].asText(),
+            fnr = packet["fødselsnummer"].asString(),
             vedtaksperiodeId = packet["vedtaksperiodeId"].asUUID(),
             internId = internId,
             håndtertTidspunkt = packet["@opprettet"].asLocalDateTime().atZone(zoneId)
         )
     }
 
-    private fun JsonNode.asUUID() = UUID.fromString(asText())
+    private fun JsonNode.asUUID() = UUID.fromString(asString())
 }

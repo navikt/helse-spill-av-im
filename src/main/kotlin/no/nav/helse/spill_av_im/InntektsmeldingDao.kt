@@ -1,20 +1,18 @@
 package no.nav.helse.spill_av_im
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.util.*
+import javax.sql.DataSource
 import kotliquery.Session
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import no.nav.inntektsmeldingkontrakt.Inntektsmelding
 import org.intellij.lang.annotations.Language
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.util.UUID
-import javax.sql.DataSource
+import tools.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.module.kotlin.readValue
 
 class InntektsmeldingDao(private val dataSource: () -> DataSource) {
 
@@ -140,8 +138,6 @@ data class InntektsmeldingDto(
 ) {
     private companion object {
         private val objectMapper = jacksonObjectMapper()
-            .registerModule(JavaTimeModule())
-            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
     }
 
     val inntektsmelding by lazy {

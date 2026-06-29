@@ -1,10 +1,5 @@
 package no.nav.helse.spill_av_im
 
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.convertValue
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
@@ -15,11 +10,14 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageMetadata
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.MessageProblems
 import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
+import java.time.LocalDateTime
+import java.util.*
 import no.nav.inntektsmeldingkontrakt.Inntektsmelding
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
-import java.time.LocalDateTime
-import java.util.*
+import tools.jackson.databind.JsonNode
+import tools.jackson.module.kotlin.convertValue
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 internal class TrengerInntektsmeldingReplay(
     rapidsConnection: RapidsConnection,
@@ -30,8 +28,6 @@ internal class TrengerInntektsmeldingReplay(
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         private val logg = LoggerFactory.getLogger(TrengerInntektsmeldingReplay::class.java)
         private val objectMapper = jacksonObjectMapper()
-            .registerModule(JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
         private const val MAKSIMALT_ANTALL_INNTEKTSMELDINGER = 10
     }
 
@@ -67,18 +63,18 @@ internal class TrengerInntektsmeldingReplay(
     }
 
     override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
-        MDC.putCloseable("meldingsreferanseId", packet["@id"].asText()).use {
-            val vedtaksperiodeId = packet["vedtaksperiodeId"].asText().toUUID()
+        MDC.putCloseable("meldingsreferanseId", packet["@id"].asString()).use {
+            val vedtaksperiodeId = packet["vedtaksperiodeId"].asString().toUUID()
             MDC.putCloseable("vedtaksperiodeId", vedtaksperiodeId.toString()).use {
                 val forespørsel = Forespørsel(
-                    fnr = packet["fødselsnummer"].asText(),
-                    orgnr = packet["organisasjonsnummer"].asText(),
+                    fnr = packet["fødselsnummer"].asString(),
+                    orgnr = packet["organisasjonsnummer"].asString(),
                     vedtaksperiodeId = vedtaksperiodeId,
                     skjæringstidspunkt = packet["skjæringstidspunkt"].asLocalDate(),
-                    førsteFraværsdager = packet["førsteFraværsdager"].map { FørsteFraværsdag(it.path("organisasjonsnummer").asText(), it.path("førsteFraværsdag").asLocalDate()) },
-                    sykmeldingsperioder = packet["sykmeldingsperioder"].map { Periode(it.path("fom").asLocalDate(), it.path("tom").asLocalDate()) },
-                    egenmeldinger = packet["egenmeldingsperioder"].map { Periode(it.path("fom").asLocalDate(), it.path("tom").asLocalDate()) },
-                    harForespurtArbeidsgiverperiode = packet["forespurteOpplysninger"].any { it.path("opplysningstype").asText() == "Arbeidsgiverperiode" }
+                    førsteFraværsdager = packet["førsteFraværsdager"].toList().map { FørsteFraværsdag(it.path("organisasjonsnummer").asString(), it.path("førsteFraværsdag").asLocalDate()) },
+                    sykmeldingsperioder = packet["sykmeldingsperioder"].toList().map { Periode(it.path("fom").asLocalDate(), it.path("tom").asLocalDate()) },
+                    egenmeldinger = packet["egenmeldingsperioder"].toList().map { Periode(it.path("fom").asLocalDate(), it.path("tom").asLocalDate()) },
+                    harForespurtArbeidsgiverperiode = packet["forespurteOpplysninger"].any { it.path("opplysningstype").asString() == "Arbeidsgiverperiode" }
                 )
                 val aktuelleForReplay = håndterForespørselOmInntektsmelding(forespørsel)
                 replayInntektsmeldinger(context, forespørsel, aktuelleForReplay, packet["@opprettet"].asLocalDateTime())

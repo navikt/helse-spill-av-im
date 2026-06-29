@@ -1,34 +1,36 @@
 package no.nav.helse.spill_av_im
 
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.convertValue
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import com.github.navikt.tbd_libs.test_support.CleanupStrategy
 import com.github.navikt.tbd_libs.test_support.DatabaseContainers
 import com.github.navikt.tbd_libs.test_support.TestDataSource
-import kotliquery.queryOf
-import kotliquery.sessionOf
-import no.nav.inntektsmeldingkontrakt.*
-import no.nav.inntektsmeldingkontrakt.Periode
-import org.intellij.lang.annotations.Language
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.*
+import kotliquery.queryOf
+import kotliquery.sessionOf
+import no.nav.inntektsmeldingkontrakt.Arbeidsgivertype
+import no.nav.inntektsmeldingkontrakt.AvsenderSystem
+import no.nav.inntektsmeldingkontrakt.Inntektsmelding
+import no.nav.inntektsmeldingkontrakt.Periode
+import no.nav.inntektsmeldingkontrakt.Refusjon
+import no.nav.inntektsmeldingkontrakt.Status
+import org.intellij.lang.annotations.Language
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import tools.jackson.module.kotlin.convertValue
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 class E2ETest {
     private companion object {
         const val FNR = "12345678911"
         const val A1 = "987654321"
-        private val databaseContainer = DatabaseContainers.container("spekemat", CleanupStrategy.tables("inntektsmelding,handtering,replay_foresporsel,replay"))
+        private val databaseContainer = DatabaseContainers.container("spill-av-im", CleanupStrategy.tables("inntektsmelding,handtering,replay_foresporsel,replay"))
         private val objectMapper = jacksonObjectMapper()
-            .registerModule(JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
     }
 
     private lateinit var dataSource: TestDataSource

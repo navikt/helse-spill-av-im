@@ -1,6 +1,5 @@
 package no.nav.helse.spill_av_im
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.github.navikt.tbd_libs.rapids_and_rivers.JsonMessage
 import com.github.navikt.tbd_libs.rapids_and_rivers.River
 import com.github.navikt.tbd_libs.rapids_and_rivers.asLocalDate
@@ -15,6 +14,7 @@ import net.logstash.logback.argument.StructuredArguments.kv
 import org.slf4j.LoggerFactory
 import java.time.ZoneId
 import java.util.*
+import tools.jackson.databind.JsonNode
 
 internal class InntektsmeldingRegistrertRiver(
     rapidsConnection: RapidsConnection,
@@ -50,17 +50,17 @@ internal class InntektsmeldingRegistrertRiver(
         logg.info("Håndterer inntektsmelding {}", kv("meldingsreferanseId", internId))
         sikkerlogg.info("Håndterer inntektsmelding {}", kv("meldingsreferanseId", internId))
         dao.lagreInntektsmelding(
-            fnr = packet["arbeidstakerFnr"].asText(),
-            virksomhetsnummer = packet["virksomhetsnummer"].takeIf(JsonNode::isTextual)?.asText(),
+            fnr = packet["arbeidstakerFnr"].asString(),
+            virksomhetsnummer = packet["virksomhetsnummer"].takeIf(JsonNode::isString)?.asString(),
             eksternId = packet["inntektsmeldingId"].asUUID(),
             internId = internId,
             innsendt = packet["mottattDato"].asLocalDateTime().atZone(zoneId),
-            avsendersystem = packet["avsenderSystem.navn"].takeIf(JsonNode::isTextual)?.asText(),
+            avsendersystem = packet["avsenderSystem.navn"].takeIf(JsonNode::isString)?.asString(),
             førsteFraværsdag = packet["foersteFravaersdag"].asOptionalLocalDate(),
             inntektsdato = packet["inntektsdato"].asOptionalLocalDate(),
             data = packet.toJson()
         )
     }
 
-    private fun JsonNode.asUUID() = UUID.fromString(asText())
+    private fun JsonNode.asUUID() = UUID.fromString(asString())
 }
