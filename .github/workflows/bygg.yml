@@ -1,4 +1,4 @@
-name: ci
+name: Bygg med Gradle og push Docker image hvis main
 
 on:
   pull_request:

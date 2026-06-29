@@ -1,4 +1,4 @@
-name: build
+name: Bygg og publiser matching
 
 on:
   push:
