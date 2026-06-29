@@ -8,6 +8,11 @@ on:
     - cron: '0 3 * * 3'
       timezone: 'Europe/Oslo'
 
+permissions:
+  contents: read
+  id-token: write
+  packages: read
+
 jobs:
   build:
     uses: ./.github/workflows/ci.yml
