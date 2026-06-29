@@ -1,3 +1,6 @@
+import java.nio.file.Files
+import java.nio.file.attribute.PosixFilePermissions
+
 val rapidsAndRiversVersion = "2026011411051768385145.e8ebad1177b4"
 val flywayCoreVersion = "12.9.0"
 val hikariCPVersion = "6.3.0"
@@ -72,6 +75,18 @@ tasks {
         val runtimeClasspath by configurations
         from(runtimeClasspath)
         into("build/libs")
+
+        doLast {
+            println("=== Permissions in build/libs ===")
+            fileTree("build/libs").files.forEach { file ->
+                val perms = try {
+                    PosixFilePermissions.toString(Files.getPosixFilePermissions(file.toPath()))
+                } catch (e: Exception) {
+                    "N/A"
+                }
+                println("${file.name} -> $perms")
+            }
+        }
     }
     named("assemble") {
         dependsOn(copyDeps)

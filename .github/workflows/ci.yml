@@ -27,15 +27,20 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
 
-      - name: Print umask value (numeric + symbolic)
-        run: |
-          echo "Numeric umask: $(umask)"
-          echo "Symbolic umask: $(umask -S)"
-
       - name: Gradle build
         run: ./gradlew build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Debug file permissions
+        run: |
+          echo "=== build/libs contents ==="
+          ls -l build/libs
+          echo
+          echo "=== recursive ==="
+          find build/libs -type f -exec ls -l {} \;
+          echo
+          echo "=== stat format ==="
+          stat -c "%n %a %A" build/libs/*
       - name: build docker image
         uses: nais/docker-build-push@v0
         id: docker-build-push
