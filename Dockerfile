@@ -8,4 +8,4 @@ ENV JAVA_OPTS='-XX:MaxRAMPercentage=90'
 WORKDIR /app
 
 CMD ["-jar", "app.jar"]
-ARG BYGD_PA_NY='2026-01-30T10:18:46'
+ARG BYGD_PA_NY='2026-06-29T08:36:00'
