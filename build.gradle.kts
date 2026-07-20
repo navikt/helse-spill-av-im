@@ -5,7 +5,7 @@ val postgresqlVersion = "42.7.13"
 val kotliqueryVersion = "1.9.1"
 
 val tbdLibsVersion = "20260702.1010"
-val junitJupiterVersion = "6.1.1"
+val junitJupiterVersion = "6.1.2"
 
 plugins {
     kotlin("jvm") version "2.4.0"
