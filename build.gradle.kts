@@ -4,7 +4,7 @@ val hikariCPVersion = "7.1.0"
 val postgresqlVersion = "42.7.13"
 val kotliqueryVersion = "1.9.1"
 
-val tbdLibsVersion = "20260811.1310"
+val tbdLibsVersion = "20260827.1253"
 val junitJupiterVersion = "6.1.3"
 
 plugins {
