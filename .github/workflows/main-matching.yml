@@ -1,0 +1,65 @@
+name: main - matching - Bygg, test og publiser
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      # Selve modulen - alt unntatt dokumentasjon
+      - 'matching/**'
+      - '!matching/**.md'
+      # Fellesoppsett som påvirker byggingen av modulen
+      - 'gradle/**'
+      - 'gradle.properties'
+      - 'settings.gradle.kts'
+      - 'build.gradle.kts'
+      - 'gradlew'
+      - 'gradlew.bat'
+      # Workflowen som bygger og publiserer modulen
+      - '.github/workflows/main-matching.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  bygg-test-og-publiser:
+    name: Bygg, test og publiser
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+
+      - name: Generer versjon
+        id: versjon
+        run: |
+          VERSJON="$(TZ=Europe/Oslo date +%Y.%m.%d-%H.%M)-$(git rev-parse --short=8 HEAD)"
+          echo "## Versjon $VERSJON" >> "$GITHUB_STEP_SUMMARY"
+          echo "versjon=$VERSJON" >> "$GITHUB_OUTPUT"
+
+      - name: gradlew build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew --build-cache :matching:build
+
+      - name: gradlew publish
+        env:
+          VERSJON: ${{ steps.versjon.outputs.versjon }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew --build-cache -Pversion="$VERSJON" :matching:publish

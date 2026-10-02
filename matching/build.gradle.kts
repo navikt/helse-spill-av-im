@@ -1,36 +1,23 @@
-// finn ny versjon her: https://github.com/navikt/inntektsmelding-kontrakt/packages/36094
-val innteksmeldingKontraktVersion = "2025.01.09-03-43-0eb17"
-val junitJupiterVersion = "6.1.3"
-val jacksonVersion = "2.22.3"
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    kotlin("jvm") version "2.4.20"
+    id("no.nav.sykepenger.kotlin")
     `maven-publish`
 }
 
 dependencies {
-    constraints {
-        api("com.fasterxml.jackson:jackson-bom:$jacksonVersion") {
-            because("Alle moduler skal bruke samme versjon av jackson")
-        }
-    }
-    api("no.nav.sykepenger.kontrakter:inntektsmelding-kontrakt:$innteksmeldingKontraktVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    api(libs.inntektsmeldingKontrakt)
 }
 
+// Biblioteket brukes av spleis, som fortsatt kjører Java 21
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
-tasks {
-    withType<Test> {
-        useJUnitPlatform()
-        testLogging {
-            events("skipped", "failed")
-        }
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_21
+        freeCompilerArgs.add("-Xjdk-release=21")
     }
 }
 
@@ -57,4 +44,3 @@ configure<PublishingExtension> {
         }
     }
 }
-

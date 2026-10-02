@@ -1,90 +1,30 @@
-val rapidsAndRiversVersion = "2026051812441779101082"
-val flywayCoreVersion = "12.11.0"
-val hikariCPVersion = "7.1.0"
-val postgresqlVersion = "42.7.13"
-val kotliqueryVersion = "1.9.1"
-
-val tbdLibsVersion = "20260811.1310"
-val junitJupiterVersion = "6.1.3"
-
 plugins {
-    kotlin("jvm") version "2.4.20"
+    alias(libs.plugins.sykepenger.deployable)
 }
 
-allprojects {
-    // Sett opp repositories basert på om vi kjører i CI eller ikke
-    // Jf. https://github.com/navikt/utvikling/blob/main/docs/teknisk/Konsumere%20biblioteker%20fra%20Github%20Package%20Registry.md
-    repositories {
-        mavenCentral()
-        if (providers.environmentVariable("GITHUB_ACTIONS").orNull == "true") {
-            maven {
-                url = uri("https://maven.pkg.github.com/navikt/maven-release")
-                credentials {
-                    username = "token"
-                    password = providers.environmentVariable("GITHUB_TOKEN").orNull!!
-                }
-            }
-        } else {
-            maven("https://repo.adeo.no/repository/github-package-registry-navikt/")
-        }
-    }
+sykepengerDeployable {
+    mainClass = "no.nav.helse.spill_av_im.AppKt"
 }
 
 dependencies {
-    api("com.github.navikt:rapids-and-rivers:$rapidsAndRiversVersion")
+    implementation(libs.rapidsAndRivers)
 
-    api("org.flywaydb:flyway-database-postgresql:$flywayCoreVersion")
-    implementation("com.zaxxer:HikariCP:$hikariCPVersion")
-    implementation("org.postgresql:postgresql:$postgresqlVersion")
-    implementation("com.github.seratch:kotliquery:$kotliqueryVersion")
+    implementation(libs.flyway.database.postgresql)
+    implementation(libs.hikaricp)
+    implementation(libs.postgresql)
+    implementation(libs.kotliquery)
 
     implementation(project("matching"))
 
-    testImplementation("com.github.navikt.tbd-libs:rapids-and-rivers-test:$tbdLibsVersion")
-    testImplementation("com.github.navikt.tbd-libs:postgres-testdatabaser:$tbdLibsVersion")
-
-    testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-}
-
-kotlin {
-    jvmToolchain {
-        languageVersion.set(JavaLanguageVersion.of("21"))
-    }
+    testImplementation(libs.tbdLibs.rapidsAndRiversTest)
+    testImplementation(libs.tbdLibs.postgresTestdatabaser)
 }
 
 tasks {
-    withType<Jar> {
-        archiveBaseName.set("app")
-
-        manifest.attributes(
-            mapOf(
-                "Main-Class" to "no.nav.helse.spill_av_im.AppKt",
-                "Class-Path" to configurations.runtimeClasspath
-                    .get()
-                    .joinToString(" ") { it.name }
-            )
-        )
-    }
-
-    val copyDeps = register<Sync>("copyDeps") {
-        description = "Kopierer runtime-avhengigheter til libs-mappa"
-        from(configurations.runtimeClasspath)
-        into(layout.buildDirectory.dir("libs"))
-    }
-    named("assemble") {
-        dependsOn(copyDeps)
-    }
-
-    withType<Test> {
-        useJUnitPlatform()
-        testLogging {
-            events("skipped", "failed")
-        }
+    named<Test>("test") {
         systemProperty("junit.jupiter.execution.parallel.enabled", "true")
         systemProperty("junit.jupiter.execution.parallel.mode.default", "concurrent")
         systemProperty("junit.jupiter.execution.parallel.config.strategy", "fixed")
         systemProperty("junit.jupiter.execution.parallel.config.fixed.parallelism", "4")
     }
 }
-

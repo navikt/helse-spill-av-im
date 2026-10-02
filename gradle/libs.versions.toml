@@ -1,0 +1,20 @@
+[versions]
+flyway = "12.11.0"
+tbdLibs = "20260811.1310"
+sykepengerGradlePlugins = "20261001.1830"
+
+[libraries]
+flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql", version.ref = "flyway" }
+hikaricp = "com.zaxxer:HikariCP:7.1.0"
+kotliquery = "com.github.seratch:kotliquery:1.9.1"
+postgresql = "org.postgresql:postgresql:42.7.13"
+rapidsAndRivers = "com.github.navikt:rapids-and-rivers:2026051812441779101082"
+
+# finn ny versjon her: https://github.com/navikt/inntektsmelding-kontrakt/packages/36094
+inntektsmeldingKontrakt = "no.nav.sykepenger.kontrakter:inntektsmelding-kontrakt:2025.01.09-03-43-0eb17"
+
+tbdLibs-rapidsAndRiversTest = { module = "com.github.navikt.tbd-libs:rapids-and-rivers-test", version.ref = "tbdLibs" }
+tbdLibs-postgresTestdatabaser = { module = "com.github.navikt.tbd-libs:postgres-testdatabaser", version.ref = "tbdLibs" }
+
+[plugins]
+sykepenger-deployable = { id = "no.nav.sykepenger.deployable", version.ref = "sykepengerGradlePlugins" }
