@@ -11,7 +11,7 @@ postgresql = "org.postgresql:postgresql:42.7.13"
 rapidsAndRivers = "com.github.navikt:rapids-and-rivers:2026051812441779101082"
 
 # finn ny versjon her: https://github.com/navikt/inntektsmelding-kontrakt/packages/36094
-inntektsmeldingKontrakt = "no.nav.sykepenger.kontrakter:inntektsmelding-kontrakt:2025.01.09-03-43-0eb17"
+inntektsmeldingKontrakt = "no.nav.sykepenger.kontrakter:inntektsmelding-kontrakt:2026.04.15-10-22-eb2ae"
 
 tbdLibs-rapidsAndRiversTest = { module = "com.github.navikt.tbd-libs:rapids-and-rivers-test", version.ref = "tbdLibs" }
 tbdLibs-postgresTestdatabaser = { module = "com.github.navikt.tbd-libs:postgres-testdatabaser", version.ref = "tbdLibs" }
