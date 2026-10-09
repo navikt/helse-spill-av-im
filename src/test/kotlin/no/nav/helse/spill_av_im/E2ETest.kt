@@ -4,9 +4,6 @@ import com.github.navikt.tbd_libs.rapids_and_rivers.test_support.TestRapid
 import com.github.navikt.tbd_libs.test_support.CleanupStrategy
 import com.github.navikt.tbd_libs.test_support.DatabaseContainers
 import com.github.navikt.tbd_libs.test_support.TestDataSource
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.util.*
 import kotliquery.queryOf
 import kotliquery.sessionOf
 import no.nav.inntektsmeldingkontrakt.Arbeidsgivertype
@@ -24,6 +21,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import tools.jackson.module.kotlin.convertValue
 import tools.jackson.module.kotlin.jacksonObjectMapper
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.util.*
 
 class E2ETest {
     private companion object {
@@ -36,11 +36,12 @@ class E2ETest {
     private lateinit var dataSource: TestDataSource
     private val dao = InntektsmeldingDao { dataSource.ds }
 
-    private val testRapid = TestRapid().apply {
-        InntektsmeldingRegistrertRiver(this, dao)
-        InntektsmeldingHåndtertRiver(this, dao)
-        TrengerInntektsmeldingReplay(this, dao)
-    }
+    private val testRapid =
+        TestRapid().apply {
+            InntektsmeldingRegistrertRiver(this, dao)
+            InntektsmeldingHåndtertRiver(this, dao)
+            TrengerInntektsmeldingReplay(this, dao)
+        }
 
     @BeforeEach
     fun setup() {
@@ -69,12 +70,16 @@ class E2ETest {
     @Test
     fun `replayer inntektsmelding`() {
         val internId = UUID.randomUUID()
-        testRapid.sendTestMessage(lagInntektsmelding(internId,
-            arbeidsgiverperioder = listOf(
-                LocalDate.of(2024, 2, 1)..LocalDate.of(2024, 2, 16)
+        testRapid.sendTestMessage(
+            lagInntektsmelding(
+                internId,
+                arbeidsgiverperioder =
+                    listOf(
+                        LocalDate.of(2024, 2, 1)..LocalDate.of(2024, 2, 16),
+                    ),
+                førsteFraværsdag = LocalDate.of(2024, 2, 1),
+                avsendersystem = "AltinnPortal",
             ),
-            førsteFraværsdag = LocalDate.of(2024, 2, 1),
-            avsendersystem = "AltinnPortal")
         )
         testRapid.sendTestMessage(lagInntektsmeldingReplay())
         verifiserInntektsmeldingFinnes(internId)
@@ -101,28 +106,43 @@ class E2ETest {
     private fun verifiserInntektsmeldingFinnes(id: UUID) {
         @Language("PostgreSQL")
         val stmt = "SELECT EXISTS(SELECT 1 FROM inntektsmelding WHERE intern_dokument_id = ?)"
-        assertEquals(true, sessionOf(dataSource.ds).use {
-            it.run(queryOf(stmt, id).map { row -> row.boolean(1) }.asSingle)
-        })
+        assertEquals(
+            true,
+            sessionOf(dataSource.ds).use {
+                it.run(queryOf(stmt, id).map { row -> row.boolean(1) }.asSingle)
+            },
+        )
     }
 
     private fun verifiserAntallReplayforespørsler(antall: Int) {
         @Language("PostgreSQL")
         val stmt = "SELECT COUNT(1) FROM replay_foresporsel"
-        assertEquals(antall, sessionOf(dataSource.ds).use {
-            it.run(queryOf(stmt).map { row -> row.int(1) }.asSingle)
-        })
+        assertEquals(
+            antall,
+            sessionOf(dataSource.ds).use {
+                it.run(queryOf(stmt).map { row -> row.int(1) }.asSingle)
+            },
+        )
     }
 
-    private fun verifiserInntektsmeldingIkkeHåndtert(id: UUID, vedtaksperiodeId: UUID) {
+    private fun verifiserInntektsmeldingIkkeHåndtert(
+        id: UUID,
+        vedtaksperiodeId: UUID,
+    ) {
         assertFalse(erInntektsmeldingHåndtert(id, vedtaksperiodeId))
     }
 
-    private fun verifiserInntektsmeldingHåndtert(id: UUID, vedtaksperiodeId: UUID) {
+    private fun verifiserInntektsmeldingHåndtert(
+        id: UUID,
+        vedtaksperiodeId: UUID,
+    ) {
         assertTrue(erInntektsmeldingHåndtert(id, vedtaksperiodeId))
     }
 
-    private fun erInntektsmeldingHåndtert(id: UUID, vedtaksperiodeId: UUID): Boolean {
+    private fun erInntektsmeldingHåndtert(
+        id: UUID,
+        vedtaksperiodeId: UUID,
+    ): Boolean {
         @Language("PostgreSQL")
         val stmt = "SELECT EXISTS(SELECT 1 FROM handtering WHERE vedtaksperiode_id = ? AND inntektsmelding_id = (SELECT id FROM inntektsmelding WHERE intern_dokument_id = ?))"
         return sessionOf(dataSource.ds).use {
@@ -133,7 +153,7 @@ class E2ETest {
     private fun lagInntektsmeldingHåndtert(
         internId: UUID,
         vedtaksperiodeId: UUID = UUID.randomUUID(),
-        håndterttidspunkt: LocalDateTime = LocalDateTime.now()
+        håndterttidspunkt: LocalDateTime = LocalDateTime.now(),
     ): String {
         @Language("JSON")
         val body = """{
@@ -182,7 +202,7 @@ class E2ETest {
         førsteFraværsdag: LocalDate? = LocalDate.of(2018, 1, 1),
         inntektsdato: LocalDate? = LocalDate.of(2018, 1, 1),
         mottattidspunkt: LocalDateTime = LocalDateTime.now(),
-        avsendersystem: String? = "NAV_NO"
+        avsendersystem: String? = "NAV_NO",
     ) = Inntektsmelding(
         inntektsmeldingId = eksternId.toString(),
         arbeidstakerFnr = FNR,
@@ -204,12 +224,13 @@ class E2ETest {
         naerRelasjon = null,
         opphoerAvNaturalytelser = emptyList(),
         refusjon = Refusjon(null, null),
-        status = Status.GYLDIG
+        status = Status.GYLDIG,
     ).let { dto ->
-        objectMapper.convertValue<Map<String, Any?>>(dto) + mapOf(
-            "@id" to internId,
-            "@event_name" to "inntektsmelding"
-        )
+        objectMapper.convertValue<Map<String, Any?>>(dto) +
+            mapOf(
+                "@id" to internId,
+                "@event_name" to "inntektsmelding",
+            )
     }.let { jsonMap ->
         objectMapper.writeValueAsString(jsonMap)
     }

@@ -19,35 +19,40 @@ fun main() {
         sikkerlogg.error("Uncaught exception: ${err.message}", err)
     }
 }
+
 private fun app(env: Map<String, String> = System.getenv()) {
-    val hikariConfig = HikariConfig().apply {
-        jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s", env.getValue("DATABASE_HOST"), env.getValue("DATABASE_PORT"), env.getValue("DATABASE_DATABASE"))
-        username = env.getValue("DATABASE_USERNAME")
-        password = env.getValue("DATABASE_PASSWORD")
-        maximumPoolSize = 2
-        initializationFailTimeout = Duration.ofMinutes(20).toMillis()
-    }
+    val hikariConfig =
+        HikariConfig().apply {
+            jdbcUrl = String.format("jdbc:postgresql://%s:%s/%s", env.getValue("DATABASE_HOST"), env.getValue("DATABASE_PORT"), env.getValue("DATABASE_DATABASE"))
+            username = env.getValue("DATABASE_USERNAME")
+            password = env.getValue("DATABASE_PASSWORD")
+            maximumPoolSize = 2
+            initializationFailTimeout = Duration.ofMinutes(20).toMillis()
+        }
 
     val dataSource by lazy { HikariDataSource(hikariConfig) }
     val dao = InntektsmeldingDao { dataSource }
 
-    RapidApplication.create(env)
+    RapidApplication
+        .create(env)
         .apply {
             if (System.getenv("NAIS_CLUSTER_NAME") == "dev-gcp") SlettPersonRiver(this, dao)
             InntektsmeldingRegistrertRiver(this, dao)
             InntektsmeldingHåndtertRiver(this, dao)
             TrengerInntektsmeldingReplay(this, dao)
-            register(object : RapidsConnection.StatusListener {
-                override fun onStartup(rapidsConnection: RapidsConnection) {
-                    HikariDataSource(hikariConfig).use { ds ->
-                        Flyway.configure()
-                            .dataSource(ds)
-                            .validateMigrationNaming(true)
-                            .load()
-                            .migrate()
+            register(
+                object : RapidsConnection.StatusListener {
+                    override fun onStartup(rapidsConnection: RapidsConnection) {
+                        HikariDataSource(hikariConfig).use { ds ->
+                            Flyway
+                                .configure()
+                                .dataSource(ds)
+                                .validateMigrationNaming(true)
+                                .load()
+                                .migrate()
+                        }
                     }
-                }
-            })
-        }
-        .start()
+                },
+            )
+        }.start()
 }

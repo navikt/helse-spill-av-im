@@ -14,16 +14,16 @@ data class Forespørsel(
     val førsteFraværsdager: List<FørsteFraværsdag>,
     val sykmeldingsperioder: List<Periode>,
     val egenmeldinger: List<Periode>,
-    val harForespurtArbeidsgiverperiode: Boolean
+    val harForespurtArbeidsgiverperiode: Boolean,
 ) {
     private val førsteFraværsdag = førsteFraværsdager.firstOrNull { it.orgnr == orgnr }
 
     private fun overlapperPeriodeMedForespørsel(dato: LocalDate) = overlapperPeriodeMedForespørsel(Periode(dato, dato))
-    private fun overlapperPeriodeMedForespørsel(datoperiode: Periode): Boolean {
-        return (førsteFraværsdag != null && Periode(førsteFraværsdag.dato, førsteFraværsdag.dato).overlapperEllerRettFør(datoperiode))
-                || sykmeldingsperioder.any { it.overlapperEllerRettFør(datoperiode) }
-                || egenmeldinger.any { it.overlapperEllerRettFør(datoperiode) }
-    }
+
+    private fun overlapperPeriodeMedForespørsel(datoperiode: Periode): Boolean =
+        (førsteFraværsdag != null && Periode(førsteFraværsdag.dato, førsteFraværsdag.dato).overlapperEllerRettFør(datoperiode)) ||
+            sykmeldingsperioder.any { it.overlapperEllerRettFør(datoperiode) } ||
+            egenmeldinger.any { it.overlapperEllerRettFør(datoperiode) }
 
     /**
      *  Disclaimer: Denne tabellen er i skrivende stund i tråd med koden, men den er her mest for tøys. 🙊
@@ -64,7 +64,7 @@ data class Forespørsel(
      * └────────────────────────┴──────────────────────┴─────────────────┴─────────────────────────────────┴─────────────────────────────────────────┘
      */
     fun erInntektsmeldingRelevant(inntektsmelding: Inntektsmelding): Boolean {
-        if (inntektsmelding.avsenderSystem?.navn in listOf("NAV_NO", "NAV_NO_SELVBESTEMT") ) return false
+        if (inntektsmelding.avsenderSystem?.navn in listOf("NAV_NO", "NAV_NO_SELVBESTEMT")) return false
         return erRelevantForArbeidsgiverperiode(inntektsmelding) || erRelevantForInntektEllerRefusjon(inntektsmelding)
     }
 
@@ -78,9 +78,9 @@ data class Forespørsel(
         val dato = foersteFravaersdag ?: sisteDag ?: return false
 
         // dagen må overlappe med forespørselens første fraværsdag, en sykmeldings- eller egenmeldingsperiode
-        return dato == førsteFraværsdag?.dato
-                || sykmeldingsperioder.any { it.overlapperEllerRettFør(dato) }
-                || egenmeldinger.any { it.overlapperEllerRettFør(dato) }
+        return dato == førsteFraværsdag?.dato ||
+            sykmeldingsperioder.any { it.overlapperEllerRettFør(dato) } ||
+            egenmeldinger.any { it.overlapperEllerRettFør(dato) }
     }
 
     // hvis vedtaksperioden har bedt om arbeidsgiverperiode så må
@@ -124,8 +124,13 @@ data class Forespørsel(
         private const val MAKS_ANTALL_DAGER_MELLOM_FØRSTE_FRAVÆRSDAG_OG_AGP_FOR_HÅNDTERING_AV_DAGER = 20
     }
 }
-data class Periode(val fom: LocalDate, val tom: LocalDate) {
+
+data class Periode(
+    val fom: LocalDate,
+    val tom: LocalDate,
+) {
     fun overlapperEllerRettFør(dato: LocalDate) = overlapperEllerRettFør(Periode(dato, dato))
+
     fun overlapperEllerRettFør(periode: Periode) =
         when (periode.tom.dayOfWeek) {
             DayOfWeek.FRIDAY -> overlapper(Periode(periode.fom, periode.tom.plusDays(3)))
@@ -134,8 +139,11 @@ data class Periode(val fom: LocalDate, val tom: LocalDate) {
         }
 
     fun overlapper(dato: LocalDate) = dato in fom..tom
-    private fun overlapper(other: Periode): Boolean {
-        return maxOf(this.fom, other.fom) <= minOf(this.tom, other.tom)
-    }
+
+    private fun overlapper(other: Periode): Boolean = maxOf(this.fom, other.fom) <= minOf(this.tom, other.tom)
 }
-data class FørsteFraværsdag(val orgnr: String, val dato: LocalDate)
+
+data class FørsteFraværsdag(
+    val orgnr: String,
+    val dato: LocalDate,
+)

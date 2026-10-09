@@ -10,15 +10,14 @@ import com.github.navikt.tbd_libs.rapids_and_rivers_api.RapidsConnection
 import io.micrometer.core.instrument.MeterRegistry
 import net.logstash.logback.argument.StructuredArguments.kv
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
 import java.time.ZoneId
 import java.util.*
-import tools.jackson.databind.JsonNode
 
 internal class InntektsmeldingHåndtertRiver(
     rapidsConnection: RapidsConnection,
-    private val dao: InntektsmeldingDao
-): River.PacketListener {
-
+    private val dao: InntektsmeldingDao,
+) : River.PacketListener {
     private companion object {
         private val sikkerlogg = LoggerFactory.getLogger("tjenestekall")
         private val logg = LoggerFactory.getLogger(InntektsmeldingHåndtertRiver::class.java)
@@ -26,21 +25,31 @@ internal class InntektsmeldingHåndtertRiver(
     }
 
     init {
-        River(rapidsConnection).apply {
-            precondition { it.requireValue("@event_name", "inntektsmelding_håndtert") }
-            validate {
-                it.requireKey("inntektsmeldingId", "fødselsnummer", "vedtaksperiodeId")
-                it.require("@opprettet", JsonNode::asLocalDateTime)
-            }
-        }.register(this)
+        River(rapidsConnection)
+            .apply {
+                precondition { it.requireValue("@event_name", "inntektsmelding_håndtert") }
+                validate {
+                    it.requireKey("inntektsmeldingId", "fødselsnummer", "vedtaksperiodeId")
+                    it.require("@opprettet", JsonNode::asLocalDateTime)
+                }
+            }.register(this)
     }
 
-    override fun onError(problems: MessageProblems, context: MessageContext, metadata: MessageMetadata) {
+    override fun onError(
+        problems: MessageProblems,
+        context: MessageContext,
+        metadata: MessageMetadata,
+    ) {
         logg.info("Håndterer ikke inntektsmelding_håndtert pga. problem: se sikker logg")
         sikkerlogg.info("Håndterer ikke inntektsmelding_håndtert pga. problem: {}", problems.toExtendedReport())
     }
 
-    override fun onPacket(packet: JsonMessage, context: MessageContext, metadata: MessageMetadata, meterRegistry: MeterRegistry) {
+    override fun onPacket(
+        packet: JsonMessage,
+        context: MessageContext,
+        metadata: MessageMetadata,
+        meterRegistry: MeterRegistry,
+    ) {
         val internId = packet["inntektsmeldingId"].asUUID()
         logg.info("Håndterer inntektsmelding_håndtert {}", kv("meldingsreferanseId", internId))
         sikkerlogg.info("Håndterer inntektsmelding_håndtert {}", kv("meldingsreferanseId", internId))
@@ -48,7 +57,7 @@ internal class InntektsmeldingHåndtertRiver(
             fnr = packet["fødselsnummer"].asString(),
             vedtaksperiodeId = packet["vedtaksperiodeId"].asUUID(),
             internId = internId,
-            håndtertTidspunkt = packet["@opprettet"].asLocalDateTime().atZone(zoneId)
+            håndtertTidspunkt = packet["@opprettet"].asLocalDateTime().atZone(zoneId),
         )
     }
 
