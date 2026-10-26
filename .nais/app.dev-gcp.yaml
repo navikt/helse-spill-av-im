@@ -11,7 +11,7 @@ spec:
             envVarPrefix: DATABASE
         flags:
           - name: cloudsql.enable_pgaudit
-            value: "false"
+            value: "off"
           - name: pgaudit.log
             value: "write,ddl,role"
           - name: pgaudit.log_parameter
